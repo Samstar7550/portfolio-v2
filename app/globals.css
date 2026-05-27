@@ -2,26 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #F6F8FA;
+    --foreground: #0D1117;
+    --accent: #0F64D2;
+    --surface-1: #FFFFFF;
+    --surface-2: #E8EDF2;
+    --border: #D1D9E0;
+    --muted: #57606A;
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  .dark {
+    --background: #0D1117;
+    --foreground: #E6EDF3;
+    --accent: #00C8D7;
+    --surface-1: #161B22;
+    --surface-2: #21262D;
+    --border: #30363D;
+    --muted: #8B949E;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] font-body transition-colors duration-300 antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #fff;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  .text-accent {
+    color: var(--accent);
+  }
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .border-accent {
+    border-color: var(--accent);
+  }
+  .bg-surface-1 {
+    background-color: var(--surface-1);
+  }
+  .bg-surface-2 {
+    background-color: var(--surface-2);
+  }
+  .text-muted-custom {
+    color: var(--muted);
+  }
+  .border-custom {
+    border-color: var(--border);
+  }
+  .glow-accent {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
 }

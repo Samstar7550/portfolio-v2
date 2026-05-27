@@ -1,0 +1,180 @@
+"use client";
+
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { Briefcase, Palette } from "lucide-react";
+
+const experience = [
+  {
+    role: "System Engineer",
+    company: "Tata Consultancy Services",
+    period: "Jan 2026 – Present",
+    type: "devops",
+    bullets: [
+      "Lead design and delivery of advanced DevOps training programs covering Kubernetes, CI/CD, and Azure",
+      "Build challenge environments across Docker, Kubernetes, Ansible, Jenkins, GitLab, and Azure DevOps",
+      "Develop training curricula aligned with real-world production requirements",
+    ],
+    tags: ["Kubernetes", "CI/CD", "Azure", "Docker", "Ansible"],
+  },
+  {
+    role: "Assistant System Engineer",
+    company: "Tata Consultancy Services",
+    period: "Sep 2025 – Dec 2025",
+    type: "devops",
+    bullets: [
+      "Designed and delivered Azure cloud training covering VMs, networking, storage, IAM, and Azure CLI",
+      "Created hands-on lab exercises for provisioning and configuring Azure environments",
+    ],
+    tags: ["Azure", "Cloud", "Networking", "IAM"],
+  },
+  {
+    role: "Assistant System Engineer Trainee",
+    company: "Tata Consultancy Services",
+    period: "Jan 2025 – Aug 2025",
+    type: "devops",
+    bullets: [
+      "Built hands-on challenge environments using Docker, Kubernetes, Ansible, Jenkins, and GitLab",
+      "Designed training content on Docker architecture, Kubernetes orchestration, and Azure DevOps pipelines",
+    ],
+    tags: ["Docker", "Kubernetes", "Jenkins", "GitLab"],
+  },
+  {
+    role: "Graduate Trainee",
+    company: "Tata Consultancy Services",
+    period: "Sep 2024 – Dec 2024",
+    type: "devops",
+    bullets: [
+      "Ranked top 6 out of 280 in TCS Ignite onboarding — top 2% of entire cohort",
+      "Selected for Talent Development team based on performance",
+    ],
+    tags: ["TCS Ignite", "Top 2%"],
+  },
+  {
+    role: "Freelance Graphic Designer",
+    company: "Self-Employed",
+    period: "Sep 2022 – Sep 2024",
+    type: "design",
+    bullets: [
+      "Delivered logo, web, and UI/UX design projects over 2 years using Figma and Adobe Photoshop",
+    ],
+    tags: ["Figma", "UI/UX", "Adobe Photoshop"],
+  },
+];
+
+const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+
+export default function Experience() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  return (
+    <section
+      id="experience"
+      className="py-24 px-4"
+      style={{ background: "var(--surface-1)" }}
+      ref={ref}
+    >
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+        >
+          {/* Title */}
+          <motion.div variants={fadeUp} className="flex items-center gap-4 mb-12">
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold">Experience</h2>
+            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+          </motion.div>
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Vertical line */}
+            <div
+              className="absolute left-4 md:left-8 top-0 bottom-0 w-px"
+              style={{ background: "var(--border)" }}
+            />
+
+            <div className="space-y-8">
+              {experience.map((item, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  transition={{ delay: i * 0.08 }}
+                  className="relative pl-14 md:pl-24"
+                >
+                  {/* Dot */}
+                  <div
+                    className="absolute left-2.5 md:left-6 top-5 w-3 h-3 rounded-full border-2 border-[var(--accent)] z-10"
+                    style={{ background: "var(--background)" }}
+                  />
+
+                  {/* Card */}
+                  <motion.div
+                    whileHover={{ x: 4 }}
+                    className="group rounded-xl p-5 sm:p-6 border border-[var(--border)] bg-[var(--background)] transition-all hover:border-[var(--accent)] hover:shadow-lg"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          {item.type === "devops" ? (
+                            <Briefcase size={14} style={{ color: "var(--accent)" }} />
+                          ) : (
+                            <Palette size={14} style={{ color: "var(--accent)" }} />
+                          )}
+                          <h3 className="font-heading font-semibold text-base sm:text-lg">
+                            {item.role}
+                          </h3>
+                        </div>
+                        <p className="text-sm font-medium" style={{ color: "var(--accent)" }}>
+                          {item.company}
+                        </p>
+                      </div>
+                      <span
+                        className="text-xs px-3 py-1 rounded-full border border-[var(--border)] shrink-0"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        {item.period}
+                      </span>
+                    </div>
+
+                    <ul className="space-y-1.5 mb-4">
+                      {item.bullets.map((b, j) => (
+                        <li
+                          key={j}
+                          className="flex gap-2 text-sm leading-relaxed"
+                          style={{ color: "var(--muted)" }}
+                        >
+                          <span
+                            className="mt-2 w-1 h-1 rounded-full shrink-0"
+                            style={{ background: "var(--accent)" }}
+                          />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex flex-wrap gap-2">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-2.5 py-0.5 rounded-full font-medium"
+                          style={{
+                            background: "color-mix(in srgb, var(--accent) 12%, transparent)",
+                            color: "var(--accent)",
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
