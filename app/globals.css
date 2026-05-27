@@ -28,7 +28,8 @@
   }
 
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] font-body transition-colors duration-300 antialiased;
+    @apply bg-[var(--background)] text-[var(--foreground)] font-body antialiased;
+    transition: background-color 400ms ease, color 400ms ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -39,6 +40,24 @@
     background: var(--accent);
     color: #fff;
   }
+}
+
+/* Smooth theme transitions on common elements */
+*, *::before, *::after {
+  transition: background-color 400ms ease, border-color 400ms ease;
+}
+
+/* Override for Framer Motion / interactive elements — use shorter durations */
+button, a, input, textarea, [role="button"],
+.transition-all, .transition-colors, .transition-opacity, .transition-transform {
+  transition: background-color 200ms ease, border-color 200ms ease,
+              color 200ms ease, box-shadow 200ms ease,
+              opacity 200ms ease;
+}
+
+/* Framer Motion elements manage their own transform/opacity — don't add extra transitions */
+[style*="transform"], [style*="opacity"] {
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
 
 @layer utilities {
@@ -84,4 +103,20 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   opacity: 0.8;
+}
+
+/* Reduced motion — disable all animations and transitions */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
 }
