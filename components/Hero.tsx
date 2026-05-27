@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Download, ExternalLink, Star } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EASE_OUT_EXPO } from "@/lib/animations";
+import { EASE_OUT_EXPO, PARTICLE_KEYFRAMES } from "@/lib/animations";
 
 const roles = ["DevOps Engineer", "Cloud Engineer", "System Engineer", "CI/CD Specialist"];
 
@@ -61,10 +61,7 @@ function FloatingParticles() {
             height: p.size,
             background: "var(--accent)",
           }}
-          animate={{
-            y: [0, -160, -320],
-            opacity: [0, 0.22, 0],
-          }}
+          animate={PARTICLE_KEYFRAMES}
           transition={{
             duration: p.duration,
             delay: p.delay,

@@ -140,7 +140,8 @@ export default function Contact() {
       setFormState("success");
       setForm({ name: "", email: "", message: "" });
       setTimeout(() => setFormState("idle"), 4000);
-    } catch {
+    } catch (err) {
+      console.error("[Contact] EmailJS send failed:", err);
       setFormState("error");
       setTimeout(() => setFormState("idle"), 4000);
     }

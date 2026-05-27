@@ -63,7 +63,12 @@ export default function Navbar() {
     if (el) el.scrollIntoView({ behavior: reduced ? "instant" : "smooth" });
   };
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+  // Guard: theme is undefined before mount (next-themes SSR). Calling
+  // setTheme with undefined would silently set the wrong value.
+  const toggleTheme = () => {
+    if (!mounted) return;
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <motion.header

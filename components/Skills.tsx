@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
@@ -212,12 +212,17 @@ function SkillBadge({
   reduced: boolean;
 }) {
   const iconData = ICONS[skill.name];
-  const color =
-    iconData?.kind === "svg"
-      ? `#${iconData.hex}`
-      : iconData?.kind === "img"
-      ? iconData.color
-      : "var(--accent)";
+  // Memoised: iconData is stable (module-level constant lookup), so this only
+  // recomputes when the skill name changes — not on every parent re-render.
+  const color = useMemo(
+    () =>
+      iconData?.kind === "svg"
+        ? `#${iconData.hex}`
+        : iconData?.kind === "img"
+        ? iconData.color
+        : "var(--accent)",
+    [iconData]
+  );
 
   return (
     <motion.div

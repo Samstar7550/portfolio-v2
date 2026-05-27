@@ -96,3 +96,11 @@ export const noMotion = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.01 } },
 };
+
+// ─── Floating particle (Hero background) ─────────────────────────────────────
+// Keeping keyframes here means a single place to tune the travel distance
+// and opacity curve if the Hero layout changes.
+export const PARTICLE_KEYFRAMES = {
+  y: [0, -160, -320] as number[],
+  opacity: [0, 0.22, 0] as number[],
+} as const;

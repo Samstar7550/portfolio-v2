@@ -41,6 +41,18 @@ const certs = [
   },
 ];
 
+// Returns animation props for a cert card. Centralising the reduced-motion
+// logic here means a single place to update if the animation changes.
+function certAnimation(reduced: boolean, delay: number) {
+  if (reduced) return {} as Record<string, never>;
+  return {
+    initial: { opacity: 0, rotateX: -25, y: 24 },
+    whileInView: { opacity: 1, rotateX: 0, y: 0 },
+    transition: { delay, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+    whileHover: { y: -6, scale: 1.02 },
+  };
+}
+
 export default function Certifications() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -73,23 +85,8 @@ export default function Certifications() {
           {certs.map((cert, i) => (
             <motion.div
               key={cert.title}
-              initial={reduced ? {} : { opacity: 0, rotateX: -25, y: 24 }}
-              whileInView={
-                reduced
-                  ? {}
-                  : { opacity: 1, rotateX: 0, y: 0 }
-              }
+              {...certAnimation(reduced, i * 0.1)}
               viewport={{ once: true }}
-              transition={
-                reduced
-                  ? {}
-                  : {
-                      delay: i * 0.1,
-                      duration: 0.55,
-                      ease: [0.22, 1, 0.36, 1],
-                    }
-              }
-              whileHover={reduced ? {} : { y: -6, scale: 1.02 }}
               style={{ transformStyle: "preserve-3d" }}
               className="group relative rounded-xl p-5 border border-[var(--border)] bg-[var(--background)] transition-all hover:border-[var(--accent)] overflow-hidden cursor-default"
             >

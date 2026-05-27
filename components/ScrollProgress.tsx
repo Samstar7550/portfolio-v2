@@ -11,14 +11,26 @@ export default function ScrollProgress() {
   const spring = useSpring(progress, { stiffness: 200, damping: 30 });
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const onScroll = () => {
-      const el = document.documentElement;
-      const scrolled = el.scrollTop;
-      const total = el.scrollHeight - el.clientHeight;
-      setProgress(total > 0 ? scrolled / total : 0);
+      // Throttle to one update per animation frame — avoids flooding React
+      // with a setState on every pixel of scroll (60-120 calls/s at fast speed).
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        const el = document.documentElement;
+        const scrolled = el.scrollTop;
+        const total = el.scrollHeight - el.clientHeight;
+        setProgress(total > 0 ? scrolled / total : 0);
+        rafId = null;
+      });
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   if (reduced) return null;
