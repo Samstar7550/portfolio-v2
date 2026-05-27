@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon, Menu, X } from "lucide-react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -18,25 +19,57 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const navRef = useRef<HTMLUListElement>(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const ids = navLinks.map((l) => l.href.slice(1));
+    const observers = ids.map((id) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { rootMargin: "-40% 0px -55% 0px" }
+      );
+      obs.observe(el);
+      return obs;
+    });
+    return () => observers.forEach((o) => o?.disconnect());
+  }, []);
+
+  // Move the sliding indicator
+  useEffect(() => {
+    if (!navRef.current || !activeSection) return;
+    const li = navRef.current.querySelector(`[data-section="${activeSection}"]`) as HTMLElement;
+    if (!li) return;
+    const navRect = navRef.current.getBoundingClientRect();
+    const liRect = li.getBoundingClientRect();
+    setIndicatorStyle({ left: liRect.left - navRect.left, width: liRect.width });
+  }, [activeSection]);
 
   const handleNav = (href: string) => {
     setMobileOpen(false);
     const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (el) el.scrollIntoView({ behavior: reduced ? "instant" : "smooth" });
   };
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 1.1 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
           ? "bg-[var(--background)]/90 backdrop-blur-md border-b border-[var(--border)]"
@@ -45,53 +78,90 @@ export default function Navbar() {
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         {/* Logo */}
-        <motion.a
-          href="#"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          whileHover={{ scale: 1.05 }}
+        <motion.button
+          onClick={() => window.scrollTo({ top: 0, behavior: reduced ? "instant" : "smooth" })}
+          whileHover={reduced ? {} : { scale: 1.07 }}
           whileTap={{ scale: 0.95 }}
-          className="relative flex items-center justify-center w-10 h-10 rounded-lg font-heading font-bold text-lg text-white cursor-pointer select-none overflow-hidden"
+          className="relative flex items-center justify-center w-10 h-10 rounded-lg font-heading font-bold text-lg text-white cursor-pointer select-none"
           style={{ background: "var(--accent)" }}
         >
           SL
-        </motion.a>
+        </motion.button>
 
-        {/* Desktop Links */}
-        <ul className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <motion.button
-                onClick={() => handleNav(link.href)}
-                whileHover={{ y: -1 }}
-                className="px-4 py-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] hover:text-accent transition-colors rounded-md hover:bg-[var(--surface-2)]"
-                style={
-                  {
-                    "--muted": "var(--muted)",
-                    "--surface-2": "var(--surface-2)",
-                  } as React.CSSProperties
-                }
-              >
-                {link.label}
-              </motion.button>
-            </li>
-          ))}
+        {/* Desktop links */}
+        <ul ref={navRef} className="hidden md:flex items-center gap-1 relative">
+          {/* Sliding active indicator */}
+          {activeSection && !reduced && (
+            <motion.div
+              className="absolute bottom-0 h-[2px] rounded-full"
+              style={{ background: "var(--accent)" }}
+              animate={{ left: indicatorStyle.left, width: indicatorStyle.width }}
+              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            />
+          )}
+
+          {navLinks.map((link) => {
+            const isActive = activeSection === link.href.slice(1);
+            return (
+              <li key={link.href} data-section={link.href.slice(1)}>
+                <motion.button
+                  onClick={() => handleNav(link.href)}
+                  className="relative px-4 py-2 text-sm font-medium rounded-md transition-colors overflow-hidden cursor-pointer"
+                  style={{
+                    color: isActive ? "var(--foreground)" : "var(--muted)",
+                  }}
+                  whileHover={{ color: "var(--foreground)" } as never}
+                >
+                  {link.label}
+                  {/* Hover underline slides in from left */}
+                  <motion.span
+                    className="absolute bottom-1 left-4 right-4 h-[1.5px] rounded-full origin-left"
+                    style={{ background: "var(--accent)" }}
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </motion.button>
+              </li>
+            );
+          })}
         </ul>
 
-        {/* Theme Toggle + Mobile Menu */}
+        {/* Right controls */}
         <div className="flex items-center gap-2">
           {mounted && (
             <motion.button
-              whileHover={{ scale: 1.1, rotate: 15 }}
+              whileHover={reduced ? {} : { scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--accent)] transition-colors"
+              onClick={toggleTheme}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--accent)] transition-colors relative overflow-hidden cursor-pointer"
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
-                <Sun size={16} className="text-accent" style={{ color: "var(--accent)" }} />
-              ) : (
-                <Moon size={16} className="text-accent" style={{ color: "var(--accent)" }} />
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {theme === "dark" ? (
+                  <motion.span
+                    key="sun"
+                    initial={{ rotate: -90, scale: 0, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: 90, scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
+                    className="absolute"
+                  >
+                    <Sun size={15} style={{ color: "var(--accent)" }} />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="moon"
+                    initial={{ rotate: 90, scale: 0, opacity: 0 }}
+                    animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                    exit={{ rotate: -90, scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
+                    className="absolute"
+                  >
+                    <Moon size={15} style={{ color: "var(--accent)" }} />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
           )}
 
@@ -99,22 +169,40 @@ export default function Navbar() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-1)]"
+            className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-1)] cursor-pointer"
             aria-label="Toggle mobile menu"
           >
-            {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            <AnimatePresence mode="wait" initial={false}>
+              {mobileOpen ? (
+                <motion.span key="x"
+                  initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}
+                  className="absolute"
+                >
+                  <X size={15} />
+                </motion.span>
+              ) : (
+                <motion.span key="menu"
+                  initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}
+                  className="absolute"
+                >
+                  <Menu size={15} />
+                </motion.span>
+              )}
+            </AnimatePresence>
           </motion.button>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile menu — spring drop */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ type: "spring", stiffness: 260, damping: 28 }}
             className="md:hidden bg-[var(--surface-1)] border-b border-[var(--border)] overflow-hidden"
           >
             <ul className="flex flex-col px-4 py-3 gap-1">
@@ -123,12 +211,12 @@ export default function Navbar() {
                   key={link.href}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: i * 0.06, type: "spring", stiffness: 260, damping: 22 }}
                 >
                   <button
                     onClick={() => handleNav(link.href)}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium rounded-md hover:bg-[var(--surface-2)] hover:text-accent transition-colors"
-                    style={{ color: "var(--muted)" } as React.CSSProperties}
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium rounded-md hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+                    style={{ color: "var(--muted)" }}
                   >
                     {link.label}
                   </button>

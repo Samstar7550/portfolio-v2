@@ -3,10 +3,10 @@
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useTheme } from "next-themes";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 
 // ─── Icon data ────────────────────────────────────────────────────────────────
-// Simple-icons paths (MIT licensed) for all icons available in v16.
-// Azure & Photoshop were removed from simple-icons ≥v8; they use devicons CDN.
 
 type SkillIconType =
   | { kind: "svg"; hex: string; path: string; invertDark?: boolean }
@@ -80,8 +80,6 @@ const ICONS: Record<string, SkillIconType> = {
     invertDark: true,
     path: "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12",
   },
-  // ─── Missing from simple-icons v16 (removed for licensing) ─────────────────
-  // Served via devicons CDN (jsdelivr) — colored official SVGs
   "Microsoft Azure": {
     kind: "img",
     src: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg",
@@ -103,7 +101,7 @@ const ICONS: Record<string, SkillIconType> = {
 
 interface SkillDef {
   name: string;
-  note?: string; // small badge under the name
+  note?: string;
 }
 
 interface SkillGroup {
@@ -125,9 +123,7 @@ const skillGroups: SkillGroup[] = [
   },
   {
     category: "Cloud",
-    skills: [
-      { name: "Microsoft Azure", note: "AZ-900 ✓" },
-    ],
+    skills: [{ name: "Microsoft Azure", note: "AZ-900 ✓" }],
   },
   {
     category: "CI/CD",
@@ -149,12 +145,18 @@ const skillGroups: SkillGroup[] = [
   },
   {
     category: "Design",
-    skills: [
-      { name: "Figma" },
-      { name: "Adobe Photoshop" },
-    ],
+    skills: [{ name: "Figma" }, { name: "Adobe Photoshop" }],
   },
 ];
+
+// Build global wave index map (left-to-right across all groups)
+const globalWaveIndex = new Map<string, number>();
+let _wi = 0;
+for (const g of skillGroups) {
+  for (const s of g.skills) {
+    globalWaveIndex.set(`${s.name}-${s.note ?? ""}`, _wi++);
+  }
+}
 
 // ─── Icon renderer ────────────────────────────────────────────────────────────
 
@@ -180,13 +182,8 @@ function SkillIcon({
       />
     );
   }
-
-  // Monochrome icons (black brand color) need to flip on dark backgrounds
   const fill =
-    iconData.invertDark && isDark
-      ? "#E6EDF3"
-      : `#${iconData.hex}`;
-
+    iconData.invertDark && isDark ? "#E6EDF3" : `#${iconData.hex}`;
   return (
     <svg
       viewBox="0 0 24 24"
@@ -201,16 +198,18 @@ function SkillIcon({
   );
 }
 
-// ─── Skill badge ─────────────────────────────────────────────────────────────
+// ─── Skill badge ──────────────────────────────────────────────────────────────
 
 function SkillBadge({
   skill,
-  index,
+  waveIndex,
   isDark,
+  reduced,
 }: {
   skill: SkillDef;
-  index: number;
+  waveIndex: number;
   isDark: boolean;
+  reduced: boolean;
 }) {
   const iconData = ICONS[skill.name];
   const color =
@@ -222,29 +221,45 @@ function SkillBadge({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.82 }}
-      whileInView={{ opacity: 1, scale: 1 }}
+      initial={reduced ? {} : { opacity: 0, scale: 0.82 }}
+      whileInView={reduced ? {} : { opacity: 1, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.05, type: "spring", stiffness: 180, damping: 14 }}
-      whileHover={{ y: -4, scale: 1.04 }}
-      className="group flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] transition-all cursor-default hover:shadow-lg"
-      style={{
-        borderColor: undefined,
-        // subtle hover border via outline to avoid layout shift
+      transition={{
+        delay: reduced ? 0 : waveIndex * 0.05,
+        type: "spring",
+        stiffness: 180,
+        damping: 14,
       }}
+      whileHover={reduced ? {} : { y: -5 }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = color;
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = color;
+        // Glow behind icon
+        const iconWrap = el.querySelector("[data-icon-wrap]") as HTMLElement | null;
+        if (iconWrap) {
+          iconWrap.style.boxShadow = `0 0 16px color-mix(in srgb, ${color} 40%, transparent)`;
+          iconWrap.style.transform = "scale(1.15)";
+        }
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "";
+        const el = e.currentTarget as HTMLElement;
+        el.style.borderColor = "";
+        const iconWrap = el.querySelector("[data-icon-wrap]") as HTMLElement | null;
+        if (iconWrap) {
+          iconWrap.style.boxShadow = "";
+          iconWrap.style.transform = "";
+        }
       }}
+      className="flex flex-col items-center gap-2.5 p-3 sm:p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] cursor-default"
     >
-      {/* Icon wrapper */}
+      {/* Icon wrapper with glow on hover */}
       <div
-        className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110"
+        data-icon-wrap
+        className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
         style={{
           background: `color-mix(in srgb, ${color} 14%, transparent)`,
           border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
+          transition: "transform 250ms ease, box-shadow 250ms ease",
         }}
       >
         {iconData ? (
@@ -265,10 +280,7 @@ function SkillBadge({
           {skill.name}
         </span>
         {skill.note && (
-          <span
-            className="block text-[9px] mt-0.5 font-medium"
-            style={{ color }}
-          >
+          <span className="block text-[9px] mt-0.5 font-medium" style={{ color }}>
             {skill.note}
           </span>
         )}
@@ -277,35 +289,42 @@ function SkillBadge({
   );
 }
 
-// ─── Section ─────────────────────────────────────────────────────────────────
+// ─── Section ──────────────────────────────────────────────────────────────────
 
 export default function Skills() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
+  const reduced = useReducedMotion();
 
   return (
     <section id="skills" className="py-24 px-4" ref={ref}>
       <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={reduced ? {} : { opacity: 0, y: 24 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, ease: EASE_OUT_EXPO }}
         >
-          <div className="flex items-center gap-4 mb-12">
+          {/* Section heading */}
+          <motion.div
+            variants={reduced ? undefined : slideLeft}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="flex items-center gap-4 mb-12"
+          >
             <h2 className="font-heading text-3xl sm:text-4xl font-bold">Skills</h2>
             <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-          </div>
+          </motion.div>
 
           <div className="space-y-10">
             {skillGroups.map((group, gi) => (
               <motion.div
                 key={group.category}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={reduced ? {} : { opacity: 0, y: 20 }}
+                whileInView={reduced ? {} : { opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: gi * 0.1 }}
+                transition={{ delay: gi * 0.08, ease: EASE_OUT_EXPO }}
               >
                 <div className="flex items-center gap-3 mb-5">
                   <h3
@@ -317,14 +336,18 @@ export default function Skills() {
                   <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                  {group.skills.map((skill, si) => (
-                    <SkillBadge
-                      key={skill.name + (skill.note ?? "")}
-                      skill={skill}
-                      index={si}
-                      isDark={isDark}
-                    />
-                  ))}
+                  {group.skills.map((skill) => {
+                    const key = `${skill.name}-${skill.note ?? ""}`;
+                    return (
+                      <SkillBadge
+                        key={key}
+                        skill={skill}
+                        waveIndex={globalWaveIndex.get(key) ?? 0}
+                        isDark={isDark}
+                        reduced={reduced}
+                      />
+                    );
+                  })}
                 </div>
               </motion.div>
             ))}
