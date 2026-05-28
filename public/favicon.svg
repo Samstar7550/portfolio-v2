@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" ry="6" fill="#080A10"/>
+  <text x="16" y="22"
+    text-anchor="middle"
+    font-family="'Liberation Sans', 'DejaVu Sans', Arial, sans-serif"
+    font-weight="700"
+    font-size="18"
+    letter-spacing="-1"
+    fill="#00C8D7">SL</text>
+</svg>

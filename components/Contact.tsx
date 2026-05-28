@@ -342,7 +342,7 @@ export default function Contact() {
 
               {/* GitHub */}
               <motion.a
-                href="https://github.com/samuvel7550"
+                href="https://github.com/Samstar7550"
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={reduced ? {} : { x: 4 }}
@@ -365,7 +365,7 @@ export default function Contact() {
                     GitHub
                   </div>
                   <div className="text-xs" style={{ color: "var(--muted)" }}>
-                    github.com/samuvel7550
+                    github.com/Samstar7550
                   </div>
                 </div>
               </motion.a>

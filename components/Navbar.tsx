@@ -82,6 +82,7 @@ export default function Navbar() {
           onClick={() => window.scrollTo({ top: 0, behavior: reduced ? "instant" : "smooth" })}
           whileHover={reduced ? {} : { scale: 1.07 }}
           whileTap={{ scale: 0.95 }}
+          aria-label="Return to top"
           className="relative flex items-center justify-center w-10 h-10 rounded-lg font-heading font-bold text-lg text-white cursor-pointer select-none"
           style={{ background: "var(--accent)" }}
         >
@@ -106,6 +107,7 @@ export default function Navbar() {
               <li key={link.href} data-section={link.href.slice(1)}>
                 <motion.button
                   onClick={() => handleNav(link.href)}
+                  aria-current={isActive ? "true" : undefined}
                   className="relative px-4 py-2 text-sm font-medium rounded-md transition-colors overflow-hidden cursor-pointer"
                   style={{
                     color: isActive ? "var(--foreground)" : "var(--muted)",
