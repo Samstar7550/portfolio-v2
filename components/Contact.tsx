@@ -3,7 +3,7 @@
 import { useState, useRef, FormEvent } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import emailjs from "@emailjs/browser";
-import { Send, CheckCircle, AlertCircle, Loader2, MapPin } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, Loader2, MapPin, Mail, Copy, Check } from "lucide-react";
 import { LinkedInIcon, GitHubIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight } from "@/lib/animations";
@@ -121,7 +121,15 @@ export default function Contact() {
   const reduced = useReducedMotion();
 
   const [formState, setFormState] = useState<FormState>("idle");
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ from_name: "", reply_to: "", message: "" });
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = () => {
+    navigator.clipboard.writeText("samstar7550@gmail.com").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -138,9 +146,10 @@ export default function Contact() {
         EMAILJS_PUBLIC_KEY
       );
       setFormState("success");
-      setForm({ name: "", email: "", message: "" });
+      setForm({ from_name: "", reply_to: "", message: "" });
       setTimeout(() => setFormState("idle"), 4000);
-    } catch {
+    } catch (err) {
+      console.error("EmailJS error:", err);
       setFormState("error");
       setTimeout(() => setFormState("idle"), 4000);
     }
@@ -185,19 +194,20 @@ export default function Contact() {
             className="lg:col-span-3"
           >
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+              <input type="hidden" name="to_email" value="samstar7550@gmail.com" />
               <div className="grid sm:grid-cols-2 gap-4">
                 <FloatingInput
                   label="Name"
-                  name="name"
-                  value={form.name}
+                  name="from_name"
+                  value={form.from_name}
                   onChange={handleChange}
                   required
                 />
                 <FloatingInput
                   label="Email"
-                  name="email"
+                  name="reply_to"
                   type="email"
-                  value={form.email}
+                  value={form.reply_to}
                   onChange={handleChange}
                   required
                 />
@@ -315,6 +325,53 @@ export default function Contact() {
             </p>
 
             <div className="space-y-3">
+              {/* Email copy */}
+              <motion.button
+                onClick={copyEmail}
+                whileHover={reduced ? {} : { x: 4 }}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)] transition-all group cursor-pointer text-left"
+              >
+                <motion.div
+                  whileHover={reduced ? {} : { y: -3, scale: 1.1 }}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)" }}
+                >
+                  <Mail size={18} style={{ color: "var(--accent)" }} />
+                </motion.div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium group-hover:text-[var(--accent)] transition-colors">
+                    Email
+                  </div>
+                  <div className="text-xs truncate" style={{ color: "var(--muted)" }}>
+                    samstar7550@gmail.com
+                  </div>
+                </div>
+                <AnimatePresence mode="wait" initial={false}>
+                  {copied ? (
+                    <motion.span
+                      key="check"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      style={{ color: "#22c55e" }}
+                    >
+                      <Check size={14} />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="copy"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      style={{ color: "var(--muted)" }}
+                    >
+                      <Copy size={14} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
               {/* LinkedIn */}
               <motion.a
                 href="https://linkedin.com/in/samuvel7550"

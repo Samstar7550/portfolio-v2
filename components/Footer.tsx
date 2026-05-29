@@ -1,3 +1,5 @@
+import { ViewCounter } from "@/components/ViewCounter";
+
 export default function Footer() {
   return (
     <footer
@@ -19,9 +21,12 @@ export default function Footer() {
           Built with Next.js · Tailwind CSS · Framer Motion
         </p>
 
-        <p className="text-xs" style={{ color: "var(--muted)" }}>
-          © {new Date().getFullYear()} Samuvel L
-        </p>
+        <div className="flex items-center gap-3">
+          <ViewCounter />
+          <p className="text-xs" style={{ color: "var(--muted)" }}>
+            © {new Date().getFullYear()} Samuvel L
+          </p>
+        </div>
       </div>
     </footer>
   );

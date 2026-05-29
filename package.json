@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "resume": "node scripts/generate-resume.mjs"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@upstash/redis": "^1.38.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "next": "14.2.35",

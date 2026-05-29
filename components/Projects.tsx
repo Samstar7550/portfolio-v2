@@ -1,11 +1,12 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { useState } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, Server, Globe, ArrowRight } from "lucide-react";
 import { FigmaIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
-import { EASE_OUT_EXPO, slideLeft, staggerContainer } from "@/lib/animations";
+import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 
 const projects = [
   {
@@ -58,6 +59,8 @@ const projects = [
   },
 ];
 
+const ALL_TAGS = ["All", ...Array.from(new Set(projects.flatMap((p) => p.tech)))];
+
 function ProjectIcon({ type, color }: { type: string; color: string }) {
   const iconStyle = { color };
   if (type === "design") return <FigmaIcon size={16} style={iconStyle} />;
@@ -70,31 +73,81 @@ export default function Projects() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
 
+  const [activeTag, setActiveTag] = useState("All");
+
+  const filtered =
+    activeTag === "All" ? projects : projects.filter((p) => p.tech.includes(activeTag));
+
   return (
     <section id="projects" className="py-24 px-4" ref={ref}>
       <div className="max-w-6xl mx-auto">
+        {/* Heading */}
         <motion.div
-          variants={staggerContainer(0.1)}
+          variants={reduced ? undefined : slideLeft}
           initial="hidden"
           animate={inView ? "visible" : "hidden"}
+          className="flex items-center gap-4 mb-8"
         >
-          {/* Heading */}
-          <motion.div
-            variants={reduced ? undefined : slideLeft}
-            className="flex items-center gap-4 mb-12"
-          >
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold">Projects</h2>
-            <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
-          </motion.div>
+          <h2 className="font-heading text-3xl sm:text-4xl font-bold">Projects</h2>
+          <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+        </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-5">
-            {projects.map((project, i) => (
+        {/* Filter pills */}
+        <motion.div
+          initial={reduced ? {} : { opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ delay: 0.15, duration: 0.45, ease: EASE_OUT_EXPO }}
+          className="flex flex-wrap gap-2 mb-8"
+        >
+          {ALL_TAGS.map((tag) => {
+            const active = tag === activeTag;
+            return (
+              <motion.button
+                key={tag}
+                onClick={() => setActiveTag(tag)}
+                whileHover={reduced ? {} : { scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                className="relative text-xs px-3 py-1.5 rounded-full border font-medium transition-colors cursor-pointer"
+                style={{
+                  borderColor: active
+                    ? "var(--accent)"
+                    : "var(--border)",
+                  color: active ? "var(--accent)" : "var(--muted)",
+                  background: active
+                    ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+                    : "transparent",
+                }}
+              >
+                {tag}
+                {active && (
+                  <motion.span
+                    layoutId="filter-pill"
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </motion.div>
+
+        {/* Cards grid */}
+        <motion.div
+          layout
+          className="grid md:grid-cols-2 gap-5"
+        >
+          <AnimatePresence mode="popLayout">
+            {filtered.map((project, i) => (
               <motion.div
                 key={project.title}
-                initial={reduced ? {} : { opacity: 0, y: 30 }}
-                whileInView={reduced ? {} : { opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5, ease: EASE_OUT_EXPO }}
+                layout
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                transition={{ duration: 0.35, delay: i * 0.05, ease: EASE_OUT_EXPO }}
                 whileHover={reduced ? {} : { y: -8 }}
                 className="group relative flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] overflow-hidden transition-all hover:border-[var(--accent)] hover:shadow-2xl"
               >
@@ -155,20 +208,34 @@ export default function Projects() {
                     {project.description}
                   </p>
 
-                  {/* Tech tags — shift color on card hover */}
+                  {/* Tech tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {project.tech.map((t) => (
-                      <span
+                      <button
                         key={t}
-                        className="text-xs px-2.5 py-0.5 rounded-full border border-[var(--border)] transition-colors group-hover:border-[color-mix(in_srgb,_var(--accent)_35%,_transparent)] group-hover:text-[var(--foreground)]"
-                        style={{ color: "var(--muted)" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveTag(t === activeTag ? "All" : t);
+                        }}
+                        className="text-xs px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer"
+                        style={{
+                          borderColor:
+                            t === activeTag
+                              ? "var(--accent)"
+                              : "color-mix(in srgb, var(--accent) 35%, var(--border))",
+                          color: t === activeTag ? "var(--accent)" : "var(--muted)",
+                          background:
+                            t === activeTag
+                              ? "color-mix(in srgb, var(--accent) 10%, transparent)"
+                              : "transparent",
+                        }}
                       >
                         {t}
-                      </span>
+                      </button>
                     ))}
                   </div>
 
-                  {/* Link with sliding arrow */}
+                  {/* Link */}
                   {project.link ? (
                     <a
                       href={project.link}
@@ -179,15 +246,10 @@ export default function Projects() {
                     >
                       <ExternalLink size={12} />
                       {project.linkLabel}
-                      {/* Arrow slides right on card hover */}
                       <motion.span
                         className="inline-block"
-                        animate={reduced ? {} : undefined}
                         whileHover={reduced ? {} : { x: 3 }}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                        }}
+                        style={{ display: "inline-flex", alignItems: "center" }}
                       >
                         <ArrowRight
                           size={12}
@@ -207,8 +269,23 @@ export default function Projects() {
                 </div>
               </motion.div>
             ))}
-          </div>
+          </AnimatePresence>
         </motion.div>
+
+        {/* Empty state */}
+        <AnimatePresence>
+          {filtered.length === 0 && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-sm text-center py-12"
+              style={{ color: "var(--muted)" }}
+            >
+              No projects match this filter.
+            </motion.p>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
