@@ -2,8 +2,15 @@ import puppeteer from "puppeteer";
 import { writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import sharp from "sharp";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const photoBuffer = await sharp(join(__dirname, "../public/SAM.JPG"))
+  .resize(200, 200, { fit: "cover", position: "top" })
+  .jpeg({ quality: 85 })
+  .toBuffer();
+const photoSrc = `data:image/jpeg;base64,${photoBuffer.toString("base64")}`;
 
 const html = `<!DOCTYPE html>
 <html lang="en">
@@ -34,19 +41,16 @@ const html = `<!DOCTYPE html>
     padding: 28px 18px;
   }
 
-  .monogram {
-    width: 72px;
-    height: 72px;
+  .photo {
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
-    background: #0F64D2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20pt;
-    font-weight: 700;
-    color: #fff;
+    object-fit: cover;
+    object-position: top;
+    display: block;
     margin: 0 auto 22px;
-    letter-spacing: -1px;
+    border: 3px solid #0F64D2;
+    box-shadow: 0 0 0 3px rgba(15,100,210,0.25);
   }
 
   .sb-section { margin-bottom: 20px; }
@@ -202,6 +206,8 @@ const html = `<!DOCTYPE html>
   .edu-score { font-size: 9pt; font-weight: 600; color: #0F64D2; }
   .edu-year { font-size: 7pt; color: #718096; margin-top: 1px; }
 
+  .page-break { break-before: page; padding-top: 24px; }
+
   .highlight-badge {
     display: inline-block;
     background: #fff7ed;
@@ -220,7 +226,7 @@ const html = `<!DOCTYPE html>
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="monogram">SL</div>
+    <img class="photo" src="${photoSrc}" alt="Samuvel L" />
 
     <div class="sb-section">
       <div class="sb-title">Contact</div>
@@ -459,7 +465,7 @@ const html = `<!DOCTYPE html>
       </div>
     </div>
 
-    <div class="section">
+    <div class="section page-break">
       <div class="section-title">Education</div>
       <div class="edu-row">
         <div>
