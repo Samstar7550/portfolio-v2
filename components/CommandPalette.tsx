@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import {
   Search, Sun, Moon, Download, User, Briefcase,
-  Cpu, Award, Folder, Mail, Terminal,
+  Cpu, Award, Folder, Mail, Terminal, Trophy, MessageSquare,
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/BrandIcons";
 
@@ -14,7 +14,9 @@ const NAV_ITEMS = [
   { id: "experience",     label: "Experience",      icon: <Briefcase size={14} /> },
   { id: "skills",         label: "Skills",          icon: <Cpu size={14} /> },
   { id: "certifications", label: "Certifications",  icon: <Award size={14} /> },
+  { id: "awards",         label: "Awards",          icon: <Trophy size={14} /> },
   { id: "projects",       label: "Projects",        icon: <Folder size={14} /> },
+  { id: "testimonials",   label: "Testimonials",    icon: <MessageSquare size={14} /> },
   { id: "contact",        label: "Contact",         icon: <Mail size={14} /> },
 ];
 

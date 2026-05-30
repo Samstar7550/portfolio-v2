@@ -55,16 +55,16 @@ export function asEducation(p: Profile): EducationItem[] {
 export type Palette = { id: string; name: string; light: string; dark: string };
 
 export const PALETTES: Palette[] = [
-  { id: "default",  name: "Teal / Blue",  light: "#0F64D2", dark: "#00C8D7" },
-  { id: "violet",   name: "Violet",       light: "#7C3AED", dark: "#A78BFA" },
-  { id: "emerald",  name: "Emerald",      light: "#059669", dark: "#34D399" },
-  { id: "rose",     name: "Rose",         light: "#E11D48", dark: "#FB7185" },
-  { id: "amber",    name: "Amber",        light: "#D97706", dark: "#FBBF24" },
-  { id: "sky",      name: "Sky",          light: "#0284C7", dark: "#38BDF8" },
-  { id: "fuchsia",  name: "Fuchsia",      light: "#C026D3", dark: "#E879F9" },
-  { id: "orange",   name: "Orange",       light: "#EA580C", dark: "#FB923C" },
-  { id: "lime",     name: "Lime",         light: "#65A30D", dark: "#A3E635" },
-  { id: "indigo",   name: "Indigo",       light: "#4F46E5", dark: "#818CF8" },
+  { id: "default",  name: "Blue / Teal",      light: "#0F64D2", dark: "#00C8D7" },
+  { id: "violet",   name: "Violet / Fuchsia", light: "#7C3AED", dark: "#D946EF" },
+  { id: "emerald",  name: "Emerald / Cyan",   light: "#059669", dark: "#22D3EE" },
+  { id: "rose",     name: "Rose / Pink",      light: "#E11D48", dark: "#F472B6" },
+  { id: "amber",    name: "Amber / Yellow",   light: "#D97706", dark: "#FDE047" },
+  { id: "sky",      name: "Sky / Indigo",     light: "#0EA5E9", dark: "#6366F1" },
+  { id: "fuchsia",  name: "Fuchsia / Rose",   light: "#C026D3", dark: "#FB7185" },
+  { id: "orange",   name: "Orange / Amber",   light: "#EA580C", dark: "#FBBF24" },
+  { id: "lime",     name: "Lime / Teal",      light: "#65A30D", dark: "#2DD4BF" },
+  { id: "indigo",   name: "Indigo / Violet",  light: "#4F46E5", dark: "#C084FC" },
 ];
 
 // CSS that overrides the accent for both light (:root) and dark (.dark) themes

@@ -5,6 +5,8 @@ import { PALETTES, paletteCss } from "@/lib/content";
 
 const STYLE_ID = "palette-override";
 const FAVICON_BG = "#080A10";
+const LS_PALETTE = "portfolio:palette";
+const LS_INITIALS = "portfolio:initials";
 
 /** Applies the admin-selected color palette by overriding the --accent CSS var. */
 export function applyPalette(id: string | undefined) {
@@ -24,7 +26,8 @@ export function applyPalette(id: string | undefined) {
   setFavicon((palette ?? PALETTES[0]).dark);
 }
 
-/** Builds an SVG monogram favicon coloured by the palette accent. */
+/** Builds an SVG monogram favicon coloured by the palette accent.
+ *  Removes and re-appends the <link> on every call so browsers always reload it. */
 export function setFavicon(accent: string, initials = "SL") {
   if (typeof document === "undefined") return;
   const svg =
@@ -35,19 +38,15 @@ export function setFavicon(accent: string, initials = "SL") {
     `</svg>`;
   const href = "data:image/svg+xml," + encodeURIComponent(svg);
 
-  // Only manage our OWN <link>. Never remove the metadata-rendered icon tags —
-  // React still tracks those and would crash on removeChild during navigation.
-  // A runtime-injected SVG icon is preferred by modern browsers over the raster
-  // fallbacks anyway.
-  let link = document.getElementById("dynamic-favicon") as HTMLLinkElement | null;
-  if (!link) {
-    link = document.createElement("link");
-    link.id = "dynamic-favicon";
-    link.rel = "icon";
-    link.type = "image/svg+xml";
-    document.head.appendChild(link);
-  }
+  // Remove and re-append so every browser notices the change immediately.
+  document.getElementById("dynamic-favicon")?.remove();
+  const link = document.createElement("link");
+  link.id = "dynamic-favicon";
+  link.rel = "icon";
+  link.type = "image/svg+xml";
+  link.sizes = "any";
   link.href = href;
+  document.head.appendChild(link);
 }
 
 function initialsFrom(name: string): string {
@@ -56,21 +55,30 @@ function initialsFrom(name: string): string {
 
 export default function PaletteProvider() {
   useEffect(() => {
-    let initials = "SL";
-    fetch("/api/content?type=profile")
-      .then((r) => r.json())
-      .then((d) => { if (d.data?.name) initials = initialsFrom(d.data.name); })
-      .catch(() => {})
-      .finally(() => {
-        fetch("/api/content?type=settings")
-          .then((r) => r.json())
-          .then((d) => {
-            applyPalette(d.data?.palette);
-            const pal = PALETTES.find((p) => p.id === d.data?.palette) ?? PALETTES[0];
-            setFavicon(pal.dark, initials);
-          })
-          .catch(() => setFavicon(PALETTES[0].dark, initials));
-      });
+    // Apply cached values immediately — no network round-trip, no flash.
+    const cachedPalette = localStorage.getItem(LS_PALETTE) ?? undefined;
+    const cachedInitials = localStorage.getItem(LS_INITIALS) ?? "SL";
+    applyPalette(cachedPalette);
+    const cachedPal = PALETTES.find((p) => p.id === cachedPalette) ?? PALETTES[0];
+    setFavicon(cachedPal.dark, cachedInitials);
+
+    // Fetch profile and settings in parallel; update if server values differ.
+    Promise.all([
+      fetch("/api/content?type=profile").then((r) => r.json()).catch(() => null),
+      fetch("/api/content?type=settings").then((r) => r.json()).catch(() => null),
+    ]).then(([profileData, settingsData]) => {
+      const initials = profileData?.data?.name
+        ? initialsFrom(profileData.data.name)
+        : cachedInitials;
+      const paletteId: string | undefined = settingsData?.data?.palette ?? undefined;
+
+      localStorage.setItem(LS_INITIALS, initials);
+      localStorage.setItem(LS_PALETTE, paletteId ?? "");
+
+      applyPalette(paletteId);
+      const pal = PALETTES.find((p) => p.id === paletteId) ?? PALETTES[0];
+      setFavicon(pal.dark, initials);
+    });
   }, []);
 
   return null;
