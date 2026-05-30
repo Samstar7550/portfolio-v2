@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import type { Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
@@ -190,11 +191,13 @@ export default function Projects() {
                     className="relative w-full aspect-video overflow-hidden cursor-zoom-in"
                     style={{ background: "var(--surface-2)" }}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={project.images[0]}
                       alt={`${project.title} preview`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      fill
+                      unoptimized
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />
                     <span className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/25 opacity-0 hover:opacity-100 transition-all">
                       <Maximize2 size={20} className="text-white drop-shadow" />

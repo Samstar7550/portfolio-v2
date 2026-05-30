@@ -118,7 +118,7 @@ export default function Contact() {
   const reduced = useReducedMotion();
 
   const [formState, setFormState] = useState<FormState>("idle");
-  const [form, setForm] = useState({ from_name: "", reply_to: "", message: "" });
+  const [form, setForm] = useState({ from_name: "", reply_to: "", message: "", company: "" });
   const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
 
@@ -153,7 +153,7 @@ export default function Contact() {
       });
       if (!res.ok) throw new Error("Request failed");
       setFormState("success");
-      setForm({ from_name: "", reply_to: "", message: "" });
+      setForm({ from_name: "", reply_to: "", message: "", company: "" });
       setTimeout(() => setFormState("idle"), 4000);
     } catch (err) {
       console.error("Contact error:", err);
@@ -201,6 +201,17 @@ export default function Contact() {
             className="lg:col-span-3"
           >
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Honeypot — hidden from humans, catches bots. Not announced to AT. */}
+              <input
+                type="text"
+                name="company"
+                value={form.company}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="absolute left-[-9999px] w-px h-px opacity-0"
+              />
               <div className="grid sm:grid-cols-2 gap-4">
                 <FloatingInput
                   label="Name"

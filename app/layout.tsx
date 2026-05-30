@@ -26,6 +26,7 @@ const dancing = Dancing_Script({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.samuvel.in"),
   title: "Samuvel L — DevOps Engineer",
   description:
     "Portfolio of Samuvel L, DevOps Engineer at TCS. Building the pipelines that ship code — Kubernetes, Docker, Azure, CI/CD.",
@@ -65,6 +66,26 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${bricolage.variable} ${outfit.variable} ${dancing.variable}`}>
+        {/* Structured data — helps Google render a rich Person result */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: "Samuvel L",
+              jobTitle: "DevOps Engineer",
+              url: "https://www.samuvel.in",
+              email: "mailto:contact@samuvel.in",
+              worksFor: { "@type": "Organization", name: "Tata Consultancy Services" },
+              knowsAbout: ["DevOps", "Kubernetes", "Docker", "Microsoft Azure", "CI/CD", "UI/UX Design"],
+              sameAs: [
+                "https://linkedin.com/in/samuvel7550",
+                "https://github.com/Samstar7550",
+              ],
+            }),
+          }}
+        />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
