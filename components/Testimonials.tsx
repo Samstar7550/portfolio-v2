@@ -42,11 +42,11 @@ export default function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="py-24 px-4"
+      className="py-16 sm:py-24"
       style={{ background: "var(--surface-1)" }}
       ref={ref}
     >
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}

@@ -124,7 +124,7 @@ export default function Hero() {
     <section
       id="hero"
       ref={sectionRef}
-      className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-12 overflow-hidden"
+      className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-12 overflow-hidden"
     >
       {/* Parallax background — decorative, hidden from screen readers */}
       <motion.div
@@ -136,7 +136,7 @@ export default function Hero() {
       </motion.div>
 
       {/* ── Two-column grid ─────────────────────────────────────────────────── */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* ── LEFT — text content ─────────────────────────────────────────── */}

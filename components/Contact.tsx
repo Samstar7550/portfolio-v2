@@ -165,11 +165,11 @@ export default function Contact() {
   return (
     <section
       id="contact"
-      className="py-24 px-4"
+      className="py-16 sm:py-24"
       style={{ background: "var(--surface-1)" }}
       ref={ref}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}

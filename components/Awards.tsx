@@ -25,8 +25,8 @@ export default function Awards() {
   if (awards.length === 0) return null;
 
   return (
-    <section id="awards" className="py-24 px-4" ref={ref}>
-      <div className="max-w-6xl mx-auto">
+    <section id="awards" className="py-16 sm:py-24" ref={ref}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}

@@ -93,8 +93,8 @@ export default function Projects() {
     activeTag === "All" ? projectList : projectList.filter((p) => p.tech.includes(activeTag));
 
   return (
-    <section id="projects" className="py-24 px-4" ref={ref}>
-      <div className="max-w-6xl mx-auto">
+    <section id="projects" className="py-16 sm:py-24" ref={ref}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}
