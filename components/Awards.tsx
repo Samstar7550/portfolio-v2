@@ -5,7 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { Trophy, Medal, Star, Sparkles } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
-import { DEFAULT_AWARDS, AwardItem } from "@/lib/content";
+import { AwardItem } from "@/lib/content";
 
 const ICONS = [Trophy, Medal, Star, Sparkles];
 
@@ -13,7 +13,7 @@ export default function Awards() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
-  const [awards, setAwards] = useState<AwardItem[]>(DEFAULT_AWARDS);
+  const [awards, setAwards] = useState<AwardItem[]>([]);
 
   useEffect(() => {
     fetch("/api/content?type=awards")

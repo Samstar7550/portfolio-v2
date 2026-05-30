@@ -9,27 +9,42 @@ import {
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/BrandIcons";
 
-const NAV_ITEMS = [
-  { id: "about",          label: "About",          icon: <User size={14} /> },
-  { id: "experience",     label: "Experience",      icon: <Briefcase size={14} /> },
-  { id: "skills",         label: "Skills",          icon: <Cpu size={14} /> },
-  { id: "certifications", label: "Certifications",  icon: <Award size={14} /> },
-  { id: "awards",         label: "Awards",          icon: <Trophy size={14} /> },
-  { id: "projects",       label: "Projects",        icon: <Folder size={14} /> },
-  { id: "testimonials",   label: "Testimonials",    icon: <MessageSquare size={14} /> },
-  { id: "contact",        label: "Contact",         icon: <Mail size={14} /> },
+const BASE_NAV_ITEMS = [
+  { id: "about",          label: "About",          icon: <User size={14} />,          section: null },
+  { id: "experience",     label: "Experience",      icon: <Briefcase size={14} />,     section: null },
+  { id: "skills",         label: "Skills",          icon: <Cpu size={14} />,           section: null },
+  { id: "certifications", label: "Certifications",  icon: <Award size={14} />,         section: null },
+  { id: "awards",         label: "Awards",          icon: <Trophy size={14} />,        section: "awards" },
+  { id: "projects",       label: "Projects",        icon: <Folder size={14} />,        section: null },
+  { id: "testimonials",   label: "Testimonials",    icon: <MessageSquare size={14} />, section: "testimonials" },
+  { id: "contact",        label: "Contact",         icon: <Mail size={14} />,          section: null },
 ];
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [resumeUrl, setResumeUrl] = useState("/resume.pdf");
+  const [available, setAvailable] = useState<Record<string, boolean>>({});
   const { theme, setTheme } = useTheme();
+
+  const navItems = BASE_NAV_ITEMS.filter(
+    (item) => !item.section || available[item.section]
+  );
 
   useEffect(() => {
     fetch("/api/content?type=settings")
       .then((r) => r.json())
       .then((d) => { if (d.data?.resumeUrl) setResumeUrl(d.data.resumeUrl); })
       .catch(() => {});
+
+    Promise.all([
+      fetch("/api/content?type=awards").then((r) => r.json()).catch(() => null),
+      fetch("/api/content?type=testimonials").then((r) => r.json()).catch(() => null),
+    ]).then(([a, t]) => {
+      setAvailable({
+        awards:       Array.isArray(a?.data) && a.data.length  > 0,
+        testimonials: Array.isArray(t?.data) && t.data.length  > 0,
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -107,7 +122,7 @@ export default function CommandPalette() {
                 </Command.Empty>
 
                 <Command.Group heading="Navigate">
-                  {NAV_ITEMS.map(({ id, label, icon }) => (
+                  {navItems.map(({ id, label, icon }) => (
                     <Command.Item
                       key={id}
                       onSelect={() => run(() => scrollTo(id))}

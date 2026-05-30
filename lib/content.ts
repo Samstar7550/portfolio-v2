@@ -233,17 +233,9 @@ export const DEFAULT_CERTIFICATIONS: Certification[] = [
   { title: "UI/UX Design", badge: "UX", issuer: "Internshala", date: "Mar 2023", status: "issued", color: "#FF7262" },
 ];
 
-export const DEFAULT_AWARDS: AwardItem[] = [
-  { title: "Top 2% — TCS Ignite", issuer: "Tata Consultancy Services", date: "2024", description: "Ranked #6 out of 280 in the TCS Ignite onboarding cohort — top 2% overall." },
-  { title: "Talent Development Selection", issuer: "Tata Consultancy Services", date: "2024", description: "Hand-picked for the Talent Development team based on early performance." },
-  { title: "Best UI/UX Design Project", issuer: "Sankara College", date: "2023", description: "Recognised for the Student Attendance Management design system built in Figma." },
-];
+export const DEFAULT_AWARDS: AwardItem[] = [];
 
-export const DEFAULT_TESTIMONIALS: Testimonial[] = [
-  { quote: "Samuvel builds challenge environments that push engineers to truly understand the tools — his DevOps depth is rare for his experience level.", author: "Team Lead", role: "DevOps Mentor", company: "TCS" },
-  { quote: "A fast learner who bridges design and infrastructure. He understands the whole delivery lifecycle, not just one slice of it.", author: "Colleague", role: "System Engineer", company: "TCS" },
-  { quote: "Reliable, curious, and genuinely enjoys solving hard delivery problems. The kind of engineer you want owning your pipelines.", author: "Reviewer", role: "Cloud Architect", company: "TCS" },
-];
+export const DEFAULT_TESTIMONIALS: Testimonial[] = [];
 
 export const DEFAULTS: Record<ContentType, unknown> = {
   settings:       DEFAULT_SETTINGS,

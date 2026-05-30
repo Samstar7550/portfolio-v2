@@ -6,14 +6,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon, Menu, X, Search } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
-const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
-  { label: "Skills", href: "#skills" },
-  { label: "Awards", href: "#awards" },
-  { label: "Projects", href: "#projects" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "Contact", href: "#contact" },
+const BASE_NAV_LINKS = [
+  { label: "About",        href: "#about",        section: null },
+  { label: "Experience",   href: "#experience",   section: null },
+  { label: "Skills",       href: "#skills",       section: null },
+  { label: "Awards",       href: "#awards",       section: "awards" },
+  { label: "Projects",     href: "#projects",     section: null },
+  { label: "Testimonials", href: "#testimonials", section: "testimonials" },
+  { label: "Contact",      href: "#contact",      section: null },
 ];
 
 export default function Navbar() {
@@ -23,13 +23,29 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [available, setAvailable] = useState<Record<string, boolean>>({});
   const navRef = useRef<HTMLUListElement>(null);
   const reduced = useReducedMotion();
+
+  const navLinks = BASE_NAV_LINKS.filter(
+    (l) => !l.section || available[l.section]
+  );
 
   useEffect(() => {
     setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    Promise.all([
+      fetch("/api/content?type=awards").then((r) => r.json()).catch(() => null),
+      fetch("/api/content?type=testimonials").then((r) => r.json()).catch(() => null),
+    ]).then(([a, t]) => {
+      setAvailable({
+        awards:       Array.isArray(a?.data)  && a.data.length  > 0,
+        testimonials: Array.isArray(t?.data)  && t.data.length  > 0,
+      });
+    });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 

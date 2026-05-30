@@ -5,13 +5,13 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
-import { DEFAULT_TESTIMONIALS, Testimonial } from "@/lib/content";
+import { Testimonial } from "@/lib/content";
 
 export default function Testimonials() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
-  const [items, setItems] = useState<Testimonial[]>(DEFAULT_TESTIMONIALS);
+  const [items, setItems] = useState<Testimonial[]>([]);
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [paused, setPaused] = useState(false);
