@@ -449,18 +449,24 @@ export default function AdminPage() {
           {authStep === "done" && (
             <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {/* Tab bar */}
-              <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
-                {TABS.map(t => (
-                  <button key={t.id} onClick={() => setTab(t.id)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer"
-                    style={{
-                      background: tab === t.id ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "transparent",
-                      color: tab === t.id ? "var(--accent)" : "var(--muted)",
-                      border: `1px solid ${tab === t.id ? "var(--accent)" : "transparent"}`,
-                    }}>
-                    {t.icon} {t.label}
-                  </button>
-                ))}
+              <div className="relative mb-6">
+                <div className="absolute left-0 inset-y-0 w-8 pointer-events-none z-10"
+                  style={{ background: "linear-gradient(to right, var(--background), transparent)" }} />
+                <div className="absolute right-0 inset-y-0 w-8 pointer-events-none z-10"
+                  style={{ background: "linear-gradient(to left, var(--background), transparent)" }} />
+                <div className="flex gap-1 overflow-x-auto pb-2 admin-tabs">
+                  {TABS.map(t => (
+                    <button key={t.id} onClick={() => setTab(t.id)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors cursor-pointer"
+                      style={{
+                        background: tab === t.id ? "color-mix(in srgb, var(--accent) 12%, transparent)" : "transparent",
+                        color: tab === t.id ? "var(--accent)" : "var(--muted)",
+                        border: `1px solid ${tab === t.id ? "var(--accent)" : "transparent"}`,
+                      }}>
+                      {t.icon} {t.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* ── Overview tab ── */}

@@ -129,6 +129,27 @@ button, a, input, textarea, [role="button"],
   opacity: 0.8;
 }
 
+/* Admin tab bar — thin accent-coloured horizontal scrollbar */
+.admin-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+.admin-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+.admin-tabs::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 9999px;
+  margin: 0 4px;
+}
+.admin-tabs::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 9999px;
+}
+.admin-tabs::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--accent) 75%, white);
+}
+
 /* cmdk — command palette items */
 [cmdk-group-heading] {
   padding: 6px 8px 4px;

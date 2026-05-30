@@ -1,10 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" ry="6" fill="#080A10"/>
-  <text x="16" y="22"
-    text-anchor="middle"
-    font-family="'Liberation Sans', 'DejaVu Sans', Arial, sans-serif"
-    font-weight="700"
-    font-size="18"
-    letter-spacing="-1"
-    fill="#00C8D7">SL</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D1117"/>
+      <stop offset="100%" stop-color="#1A2232"/>
+    </linearGradient>
+    <linearGradient id="txt" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F64D2"/>
+      <stop offset="100%" stop-color="#00C8D7"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" ry="7" fill="url(#bg)"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" ry="6.5" fill="none" stroke="url(#txt)" stroke-width="0.75" opacity="0.25"/>
+  <text x="16" y="22" text-anchor="middle"
+    font-family="'Arial', 'Helvetica', sans-serif"
+    font-weight="700" font-size="16" letter-spacing="-1"
+    fill="url(#txt)">SL</text>
 </svg>
