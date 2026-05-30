@@ -129,18 +129,16 @@ button, a, input, textarea, [role="button"],
   opacity: 0.8;
 }
 
-/* Admin tab bar — thin accent-coloured horizontal scrollbar */
+/* Admin tab bar — thin accent-coloured horizontal scrollbar, no visible track */
 .admin-tabs {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) transparent;
 }
 .admin-tabs::-webkit-scrollbar {
-  height: 3px;
+  height: 2px;
 }
 .admin-tabs::-webkit-scrollbar-track {
-  background: var(--border);
-  border-radius: 9999px;
-  margin: 0 4px;
+  background: transparent;
 }
 .admin-tabs::-webkit-scrollbar-thumb {
   background: var(--accent);
