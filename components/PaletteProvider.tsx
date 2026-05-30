@@ -22,12 +22,16 @@ export function applyPalette(id: string | undefined) {
     el.textContent = paletteCss(palette);
     if (!existing) document.head.appendChild(el);
   }
-  // Keep the favicon colour in sync with the chosen palette (use the dark/bright variant)
-  setFavicon((palette ?? PALETTES[0]).dark);
+  // Read cached initials so favicon stays correct when called from admin
+  const initials =
+    (typeof localStorage !== "undefined" && localStorage.getItem(LS_INITIALS)) || "SL";
+  setFavicon((palette ?? PALETTES[0]).dark, initials);
 }
 
 /** Builds an SVG monogram favicon coloured by the palette accent.
- *  Removes and re-appends the <link> on every call so browsers always reload it. */
+ *  Appends the element first, then sets href in rAF so browsers register
+ *  the new element before the src arrives — the only reliable way to force
+ *  Chrome/Firefox to repaint the tab favicon without a page reload. */
 export function setFavicon(accent: string, initials = "SL") {
   if (typeof document === "undefined") return;
   const svg =
@@ -38,15 +42,16 @@ export function setFavicon(accent: string, initials = "SL") {
     `</svg>`;
   const href = "data:image/svg+xml," + encodeURIComponent(svg);
 
-  // Remove and re-append so every browser notices the change immediately.
   document.getElementById("dynamic-favicon")?.remove();
   const link = document.createElement("link");
   link.id = "dynamic-favicon";
   link.rel = "icon";
   link.type = "image/svg+xml";
   link.sizes = "any";
-  link.href = href;
   document.head.appendChild(link);
+  // Set href in the next animation frame so the browser registers the new
+  // <link> element before the src arrives — this triggers the favicon repaint.
+  requestAnimationFrame(() => { link.href = href; });
 }
 
 function initialsFrom(name: string): string {
