@@ -18,7 +18,7 @@ export type Certification = {
   title: string; badge: string; issuer: string;
   date: string; status: "issued" | "progress"; color: string;
 };
-export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string };
+export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string; bookingUrl?: string };
 
 export type ProfileStat = { prefix: string; value: number; suffix: string; label: string };
 export type EducationItem = { degree: string; school: string; score: string; years: string };
@@ -43,6 +43,8 @@ export type Profile = {
   email: string;
   linkedin: string;
   github: string;
+  // Optional — "currently learning" pill in About
+  currentlyLearning?: string;
 };
 
 // Coerce education to an array (tolerates the legacy single-object shape in Redis)
@@ -136,6 +138,7 @@ export const DEFAULT_PROFILE: Profile = {
   email: "contact@samuvel.in",
   linkedin: "https://linkedin.com/in/samuvel7550",
   github: "https://github.com/Samstar7550",
+  currentlyLearning: "Azure AZ-104",
 };
 
 export const DEFAULT_SKILLS: SkillGroup[] = [

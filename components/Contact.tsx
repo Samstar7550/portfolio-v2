@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Send, CheckCircle, AlertCircle, Loader2, MapPin, Mail, Copy, Check } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, Loader2, MapPin, Mail, Copy, Check, Calendar } from "lucide-react";
 import { LinkedInIcon, GitHubIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight } from "@/lib/animations";
@@ -121,11 +121,16 @@ export default function Contact() {
   const [form, setForm] = useState({ from_name: "", reply_to: "", message: "", company: "" });
   const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+  const [bookingUrl, setBookingUrl] = useState("");
 
   useEffect(() => {
     fetch("/api/content?type=profile")
       .then(r => r.json())
       .then(d => { if (d.data) setProfile(d.data); })
+      .catch(() => {});
+    fetch("/api/content?type=settings")
+      .then(r => r.json())
+      .then(d => { if (d.data?.bookingUrl) setBookingUrl(d.data.bookingUrl); })
       .catch(() => {});
   }, []);
 
@@ -342,6 +347,25 @@ export default function Contact() {
             </p>
 
             <div className="space-y-3">
+              {/* Book a call — only when a booking URL is configured */}
+              {bookingUrl && (
+                <motion.a
+                  href={bookingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={reduced ? {} : { x: 4 }}
+                  className="flex items-center gap-3 p-4 rounded-xl border text-white transition-all group cursor-pointer"
+                  style={{ background: "var(--accent)", borderColor: "var(--accent)" }}
+                >
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-white/20">
+                    <Calendar size={18} />
+                  </span>
+                  <div>
+                    <div className="text-sm font-semibold">Book a 15-min call</div>
+                    <div className="text-xs text-white/80">Pick a time that works for you</div>
+                  </div>
+                </motion.a>
+              )}
               {/* Email copy */}
               <motion.button
                 onClick={copyEmail}

@@ -186,6 +186,20 @@ export default function About() {
             </div>
           </SlideIn>
 
+          {/* Currently learning */}
+          {profile.currentlyLearning && (
+            <SlideIn from="left" delay={0.1}>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--surface-1)] text-xs">
+                <span className="relative flex h-2 w-2" aria-hidden="true">
+                  <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping" style={{ background: "var(--accent)" }} />
+                  <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "var(--accent)" }} />
+                </span>
+                <span style={{ color: "var(--muted)" }}>Currently learning</span>
+                <span className="font-medium" style={{ color: "var(--foreground)" }}>{profile.currentlyLearning}</span>
+              </div>
+            </SlideIn>
+          )}
+
           {/* Bio paragraphs */}
           {profile.bio.map((para, i) => (
             <FadeUp key={i} delay={0.12 + i * 0.08}>

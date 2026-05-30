@@ -914,6 +914,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
   const [photoUrl, setPhotoUrl] = useState(settings?.photoUrl ?? "");
   const [resumeUrl, setResumeUrl] = useState(settings?.resumeUrl ?? "");
   const [palette, setPalette] = useState(settings?.palette ?? "default");
+  const [bookingUrl, setBookingUrl] = useState(settings?.bookingUrl ?? "");
   const [resumeUploading, setResumeUploading] = useState(false);
   const [resumeError, setResumeError] = useState("");
   const [resumeInfo, setResumeInfo] = useState("");
@@ -936,6 +937,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
       setPhotoUrl(settings.photoUrl ?? "");
       setResumeUrl(settings.resumeUrl ?? "");
       setPalette(settings.palette ?? "default");
+      setBookingUrl(settings.bookingUrl ?? "");
     }
   }, [settings]);
 
@@ -984,7 +986,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
 
   const persist = async (patch: Partial<SettingsType>) => {
     setSaving(true);
-    const next = { available, photoUrl: photoUrl || undefined, resumeUrl: resumeUrl || undefined, palette, ...patch };
+    const next = { available, photoUrl: photoUrl || undefined, resumeUrl: resumeUrl || undefined, palette, bookingUrl: bookingUrl || undefined, ...patch };
     await onSave(next);
     setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -1114,6 +1116,26 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
           </div>
           {resumeInfo && <p className="text-xs" style={{ color: "#22c55e" }}>{resumeInfo}</p>}
           {resumeError && <p className="text-xs text-red-400">{resumeError}</p>}
+        </div>
+      )}
+
+      {/* Booking link */}
+      {card(
+        <div className="space-y-2">
+          <div>
+            <p className="text-sm font-medium mb-0.5">Booking link</p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              A Cal.com / Calendly URL. Shows a &quot;Book a call&quot; button in Contact. Leave blank to hide.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input value={bookingUrl} onChange={e => setBookingUrl(e.target.value)} placeholder="https://cal.com/your-handle"
+              className="flex-1 px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]" style={{ color: "var(--foreground)" }} />
+            <button onClick={() => persist({ bookingUrl: bookingUrl || undefined })} disabled={saving}
+              className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer" style={{ background: "var(--accent)" }}>
+              {saving ? <Loader2 size={13} className="animate-spin" /> : "Save"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -1739,8 +1761,12 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
 
       {/* About */}
       <Group title="About">
-        <div><span className={lbl} style={{ color: "var(--muted)" }}>Subtitle (under name)</span>
-          <input value={p.aboutTitle} onChange={e => set("aboutTitle", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Subtitle (under name)</span>
+            <input value={p.aboutTitle} onChange={e => set("aboutTitle", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Currently learning (pill — leave blank to hide)</span>
+            <input value={p.currentlyLearning ?? ""} onChange={e => set("currentlyLearning", e.target.value || undefined)} placeholder="Azure AZ-104" className={inp} style={{ color: "var(--foreground)" }} /></div>
+        </div>
         <div><span className={lbl} style={{ color: "var(--muted)" }}>Bio paragraphs (blank line between paras). Markup: **text** = bold, ==text== = blue pill</span>
           <textarea value={p.bio.join("\n\n")} onChange={e => set("bio", e.target.value.split(/\n\n+/).map(s => s.trim()).filter(Boolean))}
             rows={8} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} /></div>
