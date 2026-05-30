@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Outfit } from "next/font/google";
+import { Bricolage_Grotesque, Outfit, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PaletteProvider from "@/components/PaletteProvider";
@@ -18,19 +18,25 @@ const outfit = Outfit({
   display: "swap",
 });
 
+const dancing = Dancing_Script({
+  subsets: ["latin"],
+  variable: "--font-signature",
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Samuvel L — DevOps Engineer",
   description:
     "Portfolio of Samuvel L, DevOps Engineer at TCS. Building the pipelines that ship code — Kubernetes, Docker, Azure, CI/CD.",
   keywords: ["DevOps", "Cloud Engineer", "Kubernetes", "Docker", "Azure", "TCS", "Samuvel"],
   authors: [{ name: "Samuvel L" }],
+  // The primary icon is app/icon.svg — Next.js serves it with a content hash
+  // (/icon.svg?<hash>) so the browser cache busts whenever the file changes.
+  // public/favicon.ico answers the implicit /favicon.ico request for legacy
+  // browsers and crawlers. Don't define `icon` here or it overrides the hashed
+  // file-convention icon and the favicon stops updating.
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon.ico" },
-    ],
     apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
   },
   manifest: "/site.webmanifest",
@@ -62,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${bricolage.variable} ${outfit.variable}`}>
+      <body className={`${bricolage.variable} ${outfit.variable} ${dancing.variable}`}>
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

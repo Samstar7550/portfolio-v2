@@ -15,13 +15,7 @@ export default function Footer() {
       .catch(() => {});
   }, []);
 
-  const initials = name
-    .split(" ")
-    .map(w => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+  const firstName = name.split(" ")[0] || name;
 
   return (
     <footer
@@ -30,13 +24,12 @@ export default function Footer() {
     >
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-white font-heading"
-            style={{ background: "var(--accent)" }}
+          <span
+            className="text-3xl leading-none select-none"
+            style={{ fontFamily: "var(--font-signature)", fontWeight: 700, color: "var(--accent)" }}
           >
-            {initials}
-          </div>
-          <span className="text-sm font-medium">{name}</span>
+            {firstName}
+          </span>
           <Link
             href="/admin"
             className="text-[10px] opacity-20 hover:opacity-70 transition-opacity duration-300 select-none"

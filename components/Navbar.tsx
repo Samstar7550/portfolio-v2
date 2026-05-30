@@ -95,16 +95,16 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
+        {/* Logo — handwritten signature */}
         <motion.button
           onClick={() => window.scrollTo({ top: 0, behavior: reduced ? "instant" : "smooth" })}
-          whileHover={reduced ? {} : { scale: 1.07 }}
+          whileHover={reduced ? {} : { scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Return to top"
-          className="relative flex items-center justify-center w-10 h-10 rounded-lg font-heading font-bold text-lg text-white cursor-pointer select-none"
-          style={{ background: "var(--accent)" }}
+          className="relative flex items-center leading-none cursor-pointer select-none pr-1 text-3xl"
+          style={{ fontFamily: "var(--font-signature)", fontWeight: 700, color: "var(--accent)" }}
         >
-          SL
+          Samuvel
         </motion.button>
 
         {/* Desktop links */}
