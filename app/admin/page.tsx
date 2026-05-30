@@ -10,10 +10,10 @@ import {
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
   Award, FileText, UserCircle, Check, Trophy, MessageSquare,
-  HardDrive, AlertTriangle,
+  HardDrive, AlertTriangle, Newspaper,
 } from "lucide-react";
 import Link from "next/link";
-import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Settings as SettingsType } from "@/lib/content";
+import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Post, Settings as SettingsType } from "@/lib/content";
 import { DEFAULT_PROFILE, asEducation, PALETTES } from "@/lib/content";
 import { applyPalette } from "@/components/PaletteProvider";
 import { PDFDocument } from "pdf-lib";
@@ -193,7 +193,7 @@ function MultiImageUploader({
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "storage";
+type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "blog" | "storage";
 type AuthStep = "login" | "forgot" | "done";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -206,6 +206,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "certifications", label: "Certifications", icon: <Award size={15} /> },
   { id: "awards",         label: "Awards",         icon: <Trophy size={15} /> },
   { id: "testimonials",   label: "Testimonials",   icon: <MessageSquare size={15} /> },
+  { id: "blog",           label: "Blog",           icon: <Newspaper size={15} /> },
   { id: "storage",        label: "Storage",        icon: <HardDrive size={15} /> },
 ];
 
@@ -246,6 +247,7 @@ export default function AdminPage() {
   const [profile, setProfile]       = useState<Profile | null>(null);
   const [awards, setAwards]         = useState<AwardItem[] | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[] | null>(null);
+  const [blog, setBlog]             = useState<Post[] | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -271,6 +273,7 @@ export default function AdminPage() {
     load("profile", setProfile as (d: unknown) => void);
     load("awards", setAwards as (d: unknown) => void);
     load("testimonials", setTestimonials as (d: unknown) => void);
+    load("blog", setBlog as (d: unknown) => void);
   }, []);
 
   // load content when authenticated
@@ -728,6 +731,13 @@ export default function AdminPage() {
                 }} />
               )}
 
+              {/* ── Blog tab ── */}
+              {tab === "blog" && (
+                <BlogTab posts={blog} uploadIcon={uploadIcon} onSave={async (b) => {
+                  if (await save("blog", b)) setBlog(b);
+                }} />
+              )}
+
               {/* ── Storage tab ── */}
               {tab === "storage" && (
                 <StorageTab token={token} onChanged={reloadContent} />
@@ -737,6 +747,113 @@ export default function AdminPage() {
         </AnimatePresence>
       </div>
     </main>
+  );
+}
+
+// ─── Blog tab ─────────────────────────────────────────────────────────────────
+
+function slugify(s: string): string {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+}
+
+function BlogTab({ posts, onSave, uploadIcon }: { posts: Post[] | null; onSave: (p: Post[]) => Promise<void>; uploadIcon: (f: File) => Promise<string> }) {
+  const [items, setItems] = useState<Post[]>(posts ?? []);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { if (posts) setItems(posts); }, [posts]);
+
+  const doSave = async () => {
+    setSaving(true); await onSave(items);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const update = (i: number, item: Post) => setItems(arr => arr.map((x, j) => j === i ? item : x));
+  const remove = (i: number) => { setItems(arr => arr.filter((_, j) => j !== i)); setEditing(null); };
+  const add = () => {
+    const blank: Post = { slug: "", title: "", excerpt: "", body: "", date: new Date().toISOString().slice(0, 10), tags: [], published: false };
+    setItems(arr => [blank, ...arr]); setEditing(0);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
+          <Plus size={14} /> Add Post
+        </button>
+        <button onClick={doSave} disabled={saving}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer"
+          style={{ background: "var(--accent)" }}>
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saved ? "Saved!" : "Save All"}
+        </button>
+      </div>
+
+      {items.length === 0 && (
+        <p className="text-sm py-8 text-center" style={{ color: "var(--muted)" }}>No posts yet. Add one to start your blog.</p>
+      )}
+
+      {items.map((item, i) => (
+        <div key={i} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
+          <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => setEditing(editing === i ? null : i)}>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold truncate">{item.title || <span style={{ color: "var(--muted)" }}>Untitled</span>}</p>
+              <p className="text-xs mt-0.5 truncate" style={{ color: "var(--muted)" }}>/blog/{item.slug || "…"} · {item.date}</p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-xs px-2 py-0.5 rounded-full" style={{
+                background: item.published ? "color-mix(in srgb, #22c55e 18%, transparent)" : "var(--surface-2)",
+                color: item.published ? "#22c55e" : "var(--muted)",
+              }}>{item.published ? "Published" : "Draft"}</span>
+              <button onClick={e => { e.stopPropagation(); remove(i); }} className="cursor-pointer hover:text-red-400 transition-colors" style={{ color: "var(--muted)" }}><Trash2 size={14} /></button>
+              {editing === i ? <ChevronUp size={14} style={{ color: "var(--muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--muted)" }} />}
+            </div>
+          </div>
+          {editing === i && (
+            <div className="px-5 pb-5 border-t border-[var(--border)]" style={{ paddingTop: 16 }}>
+              <PostForm item={item} onChange={v => update(i, v)} uploadIcon={uploadIcon} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PostForm({ item, onChange, uploadIcon }: { item: Post; onChange: (v: Post) => void; uploadIcon: (f: File) => Promise<string> }) {
+  const set = (k: keyof Post, v: unknown) => onChange({ ...item, [k]: v });
+  const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <input value={item.title}
+          onChange={e => {
+            const title = e.target.value;
+            // auto-fill slug from title only while slug is empty/untouched
+            onChange({ ...item, title, slug: item.slug ? item.slug : slugify(title) });
+          }}
+          placeholder="Title" className={inp} style={{ color: "var(--foreground)" }} />
+        <input value={item.slug} onChange={e => set("slug", slugify(e.target.value))} placeholder="url-slug" className={inp} style={{ color: "var(--foreground)" }} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <input type="date" value={item.date} onChange={e => set("date", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} />
+        <input value={item.tags.join(", ")} onChange={e => set("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))} placeholder="Tags (comma-separated)" className={inp} style={{ color: "var(--foreground)" }} />
+      </div>
+      <textarea value={item.excerpt} onChange={e => set("excerpt", e.target.value)} placeholder="Excerpt (shown in the list + meta description)" rows={2} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} />
+      <div>
+        <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Body (Markdown — # headings, **bold**, lists, `code`, links, tables)</p>
+        <textarea value={item.body} onChange={e => set("body", e.target.value)} placeholder="Write your post in Markdown…" rows={12} className={`${inp} resize-y font-mono text-xs`} style={{ color: "var(--foreground)" }} />
+      </div>
+      <div>
+        <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Cover image (optional — used for social sharing)</p>
+        <IconUploader currentUrl={item.cover} uploadFn={uploadIcon} onUpload={url => set("cover", url || undefined)} />
+      </div>
+      <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--muted)" }}>
+        <input type="checkbox" checked={item.published} onChange={e => set("published", e.target.checked)} className="accent-[var(--accent)]" />
+        Published (visible at /blog)
+      </label>
+    </div>
   );
 }
 
@@ -753,6 +870,7 @@ const RESET_SECTIONS: { id: string; label: string }[] = [
   { id: "certifications", label: "Certifications" },
   { id: "awards",         label: "Awards" },
   { id: "testimonials",   label: "Testimonials" },
+  { id: "blog",           label: "Blog" },
 ];
 
 function fmtSize(bytes: number): string {

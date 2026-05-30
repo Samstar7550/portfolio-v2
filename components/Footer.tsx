@@ -31,6 +31,13 @@ export default function Footer() {
             {firstName}
           </span>
           <Link
+            href="/blog"
+            className="text-xs hover:text-[var(--accent)] transition-colors"
+            style={{ color: "var(--muted)" }}
+          >
+            Blog
+          </Link>
+          <Link
             href="/admin"
             className="text-[10px] opacity-20 hover:opacity-70 transition-opacity duration-300 select-none"
             style={{ color: "var(--muted)" }}

@@ -17,6 +17,7 @@ const SECTION_LABELS: Record<ContentType, string> = {
   certifications: "Certifications",
   awards:         "Awards",
   testimonials:   "Testimonials",
+  blog:           "Blog posts",
 };
 
 async function verifySession(req: NextRequest) {

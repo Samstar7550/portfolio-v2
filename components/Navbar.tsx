@@ -49,9 +49,9 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Track active section via IntersectionObserver
+  // Track active section via IntersectionObserver (observe all possible sections)
   useEffect(() => {
-    const ids = navLinks.map((l) => l.href.slice(1));
+    const ids = BASE_NAV_LINKS.map((l) => l.href.slice(1));
     const observers = ids.map((id) => {
       const el = document.getElementById(id);
       if (!el) return null;
@@ -145,6 +145,16 @@ export default function Navbar() {
               </li>
             );
           })}
+          {/* Blog — real route, not an in-page anchor */}
+          <li>
+            <a
+              href="/blog"
+              className="relative inline-block px-4 py-2 text-sm font-medium rounded-md transition-colors cursor-pointer hover:text-[var(--foreground)]"
+              style={{ color: "var(--muted)" }}
+            >
+              Blog
+            </a>
+          </li>
         </ul>
 
         {/* Right controls */}
@@ -256,6 +266,20 @@ export default function Navbar() {
                   </button>
                 </motion.li>
               ))}
+              <motion.li
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: navLinks.length * 0.06, type: "spring", stiffness: 260, damping: 22 }}
+              >
+                <a
+                  href="/blog"
+                  onClick={() => setMobileOpen(false)}
+                  className="block w-full text-left px-4 py-2.5 text-sm font-medium rounded-md hover:bg-[var(--surface-2)] transition-colors cursor-pointer"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Blog
+                </a>
+              </motion.li>
             </ul>
           </motion.div>
         )}

@@ -150,6 +150,60 @@ button, a, input, textarea, [role="button"],
   background: color-mix(in srgb, var(--accent) 75%, white);
 }
 
+/* Blog post markdown rendering */
+.blog-prose {
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+.blog-prose > * + * { margin-top: 1.15rem; }
+.blog-prose h1, .blog-prose h2, .blog-prose h3, .blog-prose h4 {
+  font-family: var(--font-bricolage), sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 2rem;
+}
+.blog-prose h2 { font-size: 1.5rem; }
+.blog-prose h3 { font-size: 1.25rem; }
+.blog-prose h4 { font-size: 1.1rem; }
+.blog-prose p, .blog-prose li { color: var(--muted); }
+.blog-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.blog-prose strong { color: var(--foreground); font-weight: 600; }
+.blog-prose ul, .blog-prose ol { padding-left: 1.4rem; }
+.blog-prose ul { list-style: disc; }
+.blog-prose ol { list-style: decimal; }
+.blog-prose li { margin-top: 0.4rem; }
+.blog-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+  background: var(--surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.blog-prose pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+}
+.blog-prose pre code { background: transparent; padding: 0; font-size: 0.85rem; }
+.blog-prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--muted);
+  font-style: italic;
+}
+.blog-prose img { border-radius: 0.75rem; max-width: 100%; height: auto; }
+.blog-prose hr { border: 0; border-top: 1px solid var(--border); margin: 2rem 0; }
+.blog-prose table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.blog-prose th, .blog-prose td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+.blog-prose th { background: var(--surface-2); }
+
 /* cmdk — command palette items */
 [cmdk-group-heading] {
   padding: 6px 8px 4px;

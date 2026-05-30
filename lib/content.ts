@@ -83,9 +83,18 @@ export type Testimonial = {
   quote: string; author: string; role: string; company: string; avatarUrl?: string;
 };
 
+export type Post = {
+  slug: string; title: string; excerpt: string;
+  body: string;        // markdown
+  date: string;        // YYYY-MM-DD
+  tags: string[];
+  published: boolean;
+  cover?: string;      // optional cover image (blob proxy URL)
+};
+
 export type ContentType =
   | "settings" | "profile" | "skills" | "experience" | "projects"
-  | "certifications" | "awards" | "testimonials";
+  | "certifications" | "awards" | "testimonials" | "blog";
 
 export const CONTENT_KEYS: Record<ContentType, string> = {
   settings:       "portfolio:content:settings",
@@ -96,6 +105,7 @@ export const CONTENT_KEYS: Record<ContentType, string> = {
   certifications: "portfolio:content:certifications",
   awards:         "portfolio:content:awards",
   testimonials:   "portfolio:content:testimonials",
+  blog:           "portfolio:content:blog",
 };
 
 export const DEFAULT_SETTINGS: Settings = { available: true };
@@ -242,6 +252,8 @@ export const DEFAULT_AWARDS: AwardItem[] = [];
 
 export const DEFAULT_TESTIMONIALS: Testimonial[] = [];
 
+export const DEFAULT_BLOG: Post[] = [];
+
 export const DEFAULTS: Record<ContentType, unknown> = {
   settings:       DEFAULT_SETTINGS,
   profile:        DEFAULT_PROFILE,
@@ -251,4 +263,5 @@ export const DEFAULTS: Record<ContentType, unknown> = {
   certifications: DEFAULT_CERTIFICATIONS,
   awards:         DEFAULT_AWARDS,
   testimonials:   DEFAULT_TESTIMONIALS,
+  blog:           DEFAULT_BLOG,
 };

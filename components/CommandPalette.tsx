@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import {
   Search, Sun, Moon, Download, User, Briefcase,
-  Cpu, Award, Folder, Mail, Terminal, Trophy, MessageSquare,
+  Cpu, Award, Folder, Mail, Terminal, Trophy, MessageSquare, Newspaper,
 } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/BrandIcons";
 
@@ -136,6 +136,14 @@ export default function CommandPalette() {
                 </Command.Group>
 
                 <Command.Group heading="Actions">
+                  <Command.Item
+                    onSelect={() => run(() => { window.location.href = "/blog"; })}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg cursor-pointer"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    <span style={{ color: "var(--accent)" }}><Newspaper size={14} /></span>
+                    Visit Blog
+                  </Command.Item>
                   <Command.Item
                     onSelect={() => run(() => setTheme(theme === "dark" ? "light" : "dark"))}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg cursor-pointer"
