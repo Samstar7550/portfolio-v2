@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Outfit, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import PaletteProvider from "@/components/PaletteProvider";
+import ServiceWorker from "@/components/ServiceWorker";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export const metadata: Metadata = {
   // so the browser cache busts whenever the icon changes. Do NOT set an `icons`
   // field here — defining it suppresses the auto-generated hashed icon links.
   manifest: "/site.webmanifest",
+  appleWebApp: { capable: true, title: "Samuvel L", statusBarStyle: "black-translucent" },
   openGraph: {
     title: "Samuvel L — DevOps Engineer",
     description: "Building the pipelines that ship code.",
@@ -90,6 +92,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <PaletteProvider />
+        <ServiceWorker />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
