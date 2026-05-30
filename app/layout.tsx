@@ -31,14 +31,10 @@ export const metadata: Metadata = {
     "Portfolio of Samuvel L, DevOps Engineer at TCS. Building the pipelines that ship code — Kubernetes, Docker, Azure, CI/CD.",
   keywords: ["DevOps", "Cloud Engineer", "Kubernetes", "Docker", "Azure", "TCS", "Samuvel"],
   authors: [{ name: "Samuvel L" }],
-  // The primary icon is app/icon.svg — Next.js serves it with a content hash
-  // (/icon.svg?<hash>) so the browser cache busts whenever the file changes.
-  // public/favicon.ico answers the implicit /favicon.ico request for legacy
-  // browsers and crawlers. Don't define `icon` here or it overrides the hashed
-  // file-convention icon and the favicon stops updating.
-  icons: {
-    apple: { url: "/apple-touch-icon.png", sizes: "180x180" },
-  },
+  // Icons come from file conventions: app/icon.svg and app/apple-icon.png.
+  // Next.js emits <link rel="icon" href="/icon.svg?<hash>"> with a content hash,
+  // so the browser cache busts whenever the icon changes. Do NOT set an `icons`
+  // field here — defining it suppresses the auto-generated hashed icon links.
   manifest: "/site.webmanifest",
   openGraph: {
     title: "Samuvel L — DevOps Engineer",
