@@ -126,6 +126,71 @@ function card(children: React.ReactNode, className = "") {
   );
 }
 
+// Upload + manage a list of images (screenshots / wireframes). First image is the card hero.
+function MultiImageUploader({
+  urls,
+  onChange,
+  uploadFn,
+}: {
+  urls: string[];
+  onChange: (urls: string[]) => void;
+  uploadFn: (file: File) => Promise<string>;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFiles = async (files: FileList) => {
+    setUploading(true);
+    try {
+      const added: string[] = [];
+      for (const f of Array.from(files)) added.push(await uploadFn(f));
+      onChange([...urls, ...added]);
+    } catch { /* silent */ }
+    setUploading(false);
+  };
+
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= urls.length) return;
+    const next = [...urls];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {urls.map((u, i) => (
+        <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-[var(--border)] group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={u} alt="" className="w-full h-full object-cover" />
+          {i === 0 && (
+            <span className="absolute bottom-0 inset-x-0 text-[9px] text-center text-white bg-black/60 py-0.5">Hero</span>
+          )}
+          <button onClick={() => onChange(urls.filter((_, j) => j !== i))}
+            className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 text-white flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Remove image">
+            <X size={11} />
+          </button>
+          <div className="absolute top-0.5 left-0.5 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {i > 0 && (
+              <button onClick={() => move(i, -1)} className="w-5 h-5 rounded bg-black/60 text-white flex items-center justify-center cursor-pointer" aria-label="Move left"><ChevronUp size={11} className="-rotate-90" /></button>
+            )}
+            {i < urls.length - 1 && (
+              <button onClick={() => move(i, 1)} className="w-5 h-5 rounded bg-black/60 text-white flex items-center justify-center cursor-pointer" aria-label="Move right"><ChevronDown size={11} className="-rotate-90" /></button>
+            )}
+          </div>
+        </div>
+      ))}
+      <button onClick={() => inputRef.current?.click()} disabled={uploading}
+        className="w-20 h-20 rounded-lg border border-dashed border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] transition-colors cursor-pointer disabled:opacity-50">
+        {uploading ? <Loader2 size={16} className="animate-spin" style={{ color: "var(--muted)" }} /> : <ImagePlus size={16} style={{ color: "var(--muted)" }} />}
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" multiple className="hidden"
+        onChange={e => e.target.files && handleFiles(e.target.files)} />
+    </div>
+  );
+}
+
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
 type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "storage";
@@ -1499,6 +1564,12 @@ function ProjectForm({ item, onChange, uploadIcon }: { item: Project; onChange: 
       <div className="grid grid-cols-2 gap-3">
         <input value={item.link ?? ""} onChange={e => set("link", e.target.value || null)} placeholder="Link URL (optional)" className={inp} style={{ color: "var(--foreground)" }} />
         <input value={item.linkLabel ?? ""} onChange={e => set("linkLabel", e.target.value || null)} placeholder="Link label (optional)" className={inp} style={{ color: "var(--foreground)" }} />
+      </div>
+      <input value={item.figma ?? ""} onChange={e => set("figma", e.target.value || undefined)} placeholder="Figma / prototype link (optional)" className={inp} style={{ color: "var(--foreground)" }} />
+      <div>
+        <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Screenshots / wireframes — first is the card hero, all open in a gallery</p>
+        <MultiImageUploader urls={item.images ?? []} uploadFn={uploadIcon}
+          onChange={urls => set("images", urls.length ? urls : undefined)} />
       </div>
     </div>
   );

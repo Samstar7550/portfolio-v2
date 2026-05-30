@@ -11,6 +11,8 @@ export type Project = {
   tech: string[]; link: string | null; linkLabel: string | null;
   type: "web" | "devops" | "design"; color: string; featured: boolean;
   iconUrl?: string;
+  images?: string[];   // screenshots / wireframes — first is the card hero, all open in a lightbox
+  figma?: string;      // optional Figma / prototype / Behance link
 };
 export type Certification = {
   title: string; badge: string; issuer: string;

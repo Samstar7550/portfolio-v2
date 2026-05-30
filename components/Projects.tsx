@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
-import { ExternalLink, Server, Globe, ArrowRight } from "lucide-react";
+import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { FigmaIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
@@ -76,6 +76,7 @@ export default function Projects() {
   const [activeTag, setActiveTag] = useState("All");
   const [projectList, setProjectList] = useState<ProjectType[]>(defaultProjects);
   const [allTags, setAllTags] = useState<string[]>(ALL_DEFAULT_TAGS);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number; title: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/content?type=projects")
@@ -93,6 +94,7 @@ export default function Projects() {
     activeTag === "All" ? projectList : projectList.filter((p) => p.tech.includes(activeTag));
 
   return (
+    <>
     <section id="projects" className="py-16 sm:py-24" ref={ref}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
@@ -179,6 +181,32 @@ export default function Projects() {
                   }}
                 />
 
+                {/* Image hero — wireframes / screenshots, click to open lightbox */}
+                {project.images && project.images.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setLightbox({ images: project.images!, index: 0, title: project.title })}
+                    aria-label={`View ${project.title} ${project.images.length > 1 ? "gallery" : "image"}`}
+                    className="relative w-full aspect-video overflow-hidden cursor-zoom-in"
+                    style={{ background: "var(--surface-2)" }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={project.images[0]}
+                      alt={`${project.title} preview`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/25 opacity-0 hover:opacity-100 transition-all">
+                      <Maximize2 size={20} className="text-white drop-shadow" />
+                    </span>
+                    {project.images.length > 1 && (
+                      <span className="absolute bottom-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-sm">
+                        1 / {project.images.length}
+                      </span>
+                    )}
+                  </button>
+                )}
+
                 <div className="relative flex flex-col flex-1 p-5 sm:p-6">
                   {/* Header */}
                   <div className="flex items-start justify-between gap-3 mb-3">
@@ -254,37 +282,52 @@ export default function Projects() {
                     ))}
                   </div>
 
-                  {/* Link */}
-                  {project.link ? (
-                    <a
-                      href={project.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-90"
-                      style={{ color: project.color }}
-                    >
-                      <ExternalLink size={12} />
-                      {project.linkLabel}
-                      <motion.span
-                        className="inline-block"
-                        whileHover={reduced ? {} : { x: 3 }}
-                        style={{ display: "inline-flex", alignItems: "center" }}
+                  {/* Links */}
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {project.link ? (
+                      <a
+                        href={project.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-90"
+                        style={{ color: project.color }}
                       >
-                        <ArrowRight
-                          size={12}
-                          className="transition-transform group-hover:translate-x-1"
-                        />
-                      </motion.span>
-                    </a>
-                  ) : (
-                    <span
-                      className="inline-flex items-center gap-2 text-xs"
-                      style={{ color: "var(--muted)" }}
-                    >
-                      <Server size={12} />
-                      {project.type === "devops" ? "Internal TCS Project" : "Design Portfolio"}
-                    </span>
-                  )}
+                        <ExternalLink size={12} />
+                        {project.linkLabel}
+                        <motion.span
+                          className="inline-block"
+                          whileHover={reduced ? {} : { x: 3 }}
+                          style={{ display: "inline-flex", alignItems: "center" }}
+                        >
+                          <ArrowRight
+                            size={12}
+                            className="transition-transform group-hover:translate-x-1"
+                          />
+                        </motion.span>
+                      </a>
+                    ) : !project.figma ? (
+                      <span
+                        className="inline-flex items-center gap-2 text-xs"
+                        style={{ color: "var(--muted)" }}
+                      >
+                        <Server size={12} />
+                        {project.type === "devops" ? "Internal TCS Project" : "Design Portfolio"}
+                      </span>
+                    ) : null}
+
+                    {project.figma && (
+                      <a
+                        href={project.figma}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-90"
+                        style={{ color: project.color }}
+                      >
+                        <FigmaIcon size={12} />
+                        View in Figma
+                      </a>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -307,5 +350,98 @@ export default function Projects() {
         </AnimatePresence>
       </div>
     </section>
+
+    <ProjectLightbox data={lightbox} onClose={() => setLightbox(null)} reduced={reduced} />
+    </>
+  );
+}
+
+// ─── Fullscreen image gallery ────────────────────────────────────────────────
+function ProjectLightbox({
+  data,
+  onClose,
+  reduced,
+}: {
+  data: { images: string[]; index: number; title: string } | null;
+  onClose: () => void;
+  reduced: boolean;
+}) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => { if (data) setIndex(data.index); }, [data]);
+
+  useEffect(() => {
+    if (!data) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowRight") setIndex((i) => (i + 1) % data.images.length);
+      else if (e.key === "ArrowLeft") setIndex((i) => (i - 1 + data.images.length) % data.images.length);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [data, onClose]);
+
+  const many = (data?.images.length ?? 0) > 1;
+
+  return (
+    <AnimatePresence>
+      {data && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 bg-black/85 backdrop-blur-sm"
+        >
+          {/* Close */}
+          <button
+            onClick={onClose}
+            aria-label="Close gallery"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+          >
+            <X size={18} />
+          </button>
+
+          {many && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIndex((i) => (i - 1 + data.images.length) % data.images.length); }}
+                aria-label="Previous image"
+                className="absolute left-3 sm:left-6 w-11 h-11 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setIndex((i) => (i + 1) % data.images.length); }}
+                aria-label="Next image"
+                className="absolute right-3 sm:right-6 w-11 h-11 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <ChevronRight size={22} />
+              </button>
+            </>
+          )}
+
+          <motion.figure
+            key={index}
+            initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2, ease: EASE_OUT_EXPO }}
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-5xl w-full flex flex-col items-center gap-3"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={data.images[index]}
+              alt={`${data.title} — ${index + 1} of ${data.images.length}`}
+              className="max-h-[78vh] w-auto max-w-full rounded-lg object-contain shadow-2xl"
+            />
+            <figcaption className="text-xs text-white/70">
+              {data.title}{many ? ` · ${index + 1} / ${data.images.length}` : ""}
+            </figcaption>
+          </motion.figure>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
