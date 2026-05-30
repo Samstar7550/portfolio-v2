@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ViewCounter } from "@/components/ViewCounter";
 
 export default function Footer() {
@@ -15,6 +16,14 @@ export default function Footer() {
             SL
           </div>
           <span className="text-sm font-medium">Samuvel L</span>
+          <Link
+            href="/admin"
+            className="text-[10px] opacity-20 hover:opacity-70 transition-opacity duration-300 select-none"
+            style={{ color: "var(--muted)" }}
+            aria-label="Admin"
+          >
+            ⚙
+          </Link>
         </div>
 
         <p className="text-xs text-center" style={{ color: "var(--muted)" }}>

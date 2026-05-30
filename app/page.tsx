@@ -13,6 +13,10 @@ import Footer from "@/components/Footer";
 import LoadingScreen from "@/components/LoadingScreen";
 import ScrollProgress from "@/components/ScrollProgress";
 import BackToTop from "@/components/BackToTop";
+import CursorSpotlight from "@/components/CursorSpotlight";
+import CommandPalette from "@/components/CommandPalette";
+import GitHubActivity from "@/components/GitHubActivity";
+import LeadCapture from "@/components/LeadCapture";
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
@@ -24,6 +28,8 @@ export default function Home() {
 
   return (
     <main id="main-content">
+      <CursorSpotlight />
+      <CommandPalette />
       <LoadingScreen done={loaded} />
       <ScrollProgress />
       <Navbar />
@@ -33,9 +39,11 @@ export default function Home() {
       <Skills />
       <Certifications />
       <Projects />
+      <GitHubActivity />
       <Contact />
       <Footer />
       <BackToTop />
+      <LeadCapture />
     </main>
   );
 }

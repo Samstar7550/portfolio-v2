@@ -32,6 +32,9 @@ Inline SVG components: `LinkedInIcon`, `GitHubIcon`, `FigmaIcon`
 Accept `{ size?: number, className?: string, style?: React.CSSProperties }`  
 Used in Contact (social links), Projects (ProjectIcon function component for design type)
 
+## Admin uploads override (added 2026-05-30)
+Skills/Experience/Projects items can carry an optional `iconUrl` (uploaded via the admin console → Vercel Blob → `/api/blob` proxy). In each component the render order is: **`iconUrl` (uploaded `<img>`) → built-in ICONS map → 2-letter fallback**. Skills now renders from the Redis-loaded `groups` state (falls back to the static `skillGroups` defaults), so the module-level wave index only covers default skills — admin-added skills get wave index `0`.
+
 ## Wave stagger index
 Global index computed at module level (outside component) so it doesn't re-run on renders:
 ```ts

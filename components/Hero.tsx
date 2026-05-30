@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO } from "@/lib/animations";
 
-const roles = ["DevOps Engineer", "Cloud Engineer", "System Engineer", "CI/CD Specialist"];
+const roles = ["DevOps Engineer", "Cloud Engineer", "System Engineer"];
 
 function useTypewriter(words: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
   const [displayed, setDisplayed] = useState("");
@@ -90,6 +90,18 @@ export default function Hero() {
   const role = useTypewriter(roles);
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
+  const [available, setAvailable] = useState(true);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/content?type=settings")
+      .then(r => r.json())
+      .then(d => {
+        if (typeof d.data?.available === "boolean") setAvailable(d.data.available);
+        if (d.data?.photoUrl) setPhotoUrl(d.data.photoUrl);
+      })
+      .catch(() => {});
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -127,11 +139,16 @@ export default function Hero() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-6 border border-[var(--border)] bg-[var(--surface-1)]"
             >
               <span
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ background: "#22c55e" }}
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: available ? "#22c55e" : "var(--muted)",
+                  ...(available && !reduced ? { animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" } : {}),
+                }}
               />
               <span style={{ color: "var(--muted)" }}>
-                Available for DevOps &amp; Cloud roles · Remote · India
+                {available
+                  ? "Available for DevOps & Cloud roles · Remote · India"
+                  : "Not currently open to new roles"}
               </span>
             </motion.div>
 
@@ -278,10 +295,11 @@ export default function Hero() {
                 }}
               >
                 <Image
-                  src="/SAM.JPG"
+                  src={photoUrl ?? "/SAM.JPG"}
                   alt="Samuvel L — DevOps Engineer"
                   fill
                   priority
+                  unoptimized={!!photoUrl}
                   className="object-cover object-top"
                   sizes="(max-width: 640px) 224px, (max-width: 1024px) 256px, 320px"
                 />

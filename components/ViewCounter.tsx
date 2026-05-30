@@ -8,10 +8,16 @@ export function ViewCounter() {
 
   useEffect(() => {
     const counted = sessionStorage.getItem("pv_counted");
-    const endpoint = counted ? "/api/views" : "/api/views";
-    const method = counted ? "GET" : "POST";
 
-    fetch(endpoint, { method })
+    const fetchOpts: RequestInit = counted
+      ? { method: "GET" }
+      : {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ referrer: document.referrer || "" }),
+        };
+
+    fetch("/api/views", fetchOpts)
       .then((r) => r.json())
       .then((d: { count: number }) => {
         setCount(d.count);

@@ -129,6 +129,27 @@ button, a, input, textarea, [role="button"],
   opacity: 0.8;
 }
 
+/* cmdk — command palette items */
+[cmdk-group-heading] {
+  padding: 6px 8px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+[cmdk-item] {
+  border-radius: 8px;
+  outline: none;
+}
+[cmdk-item][aria-selected="true"] {
+  background: var(--surface-2);
+  color: var(--foreground);
+}
+[cmdk-item][aria-selected="true"] span {
+  color: var(--accent) !important;
+}
+
 /* Reduced motion — disable all animations and transitions */
 @media (prefers-reduced-motion: reduce) {
   html {

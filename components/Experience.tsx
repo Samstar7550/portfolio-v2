@@ -1,12 +1,13 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+import type { ExperienceItem } from "@/lib/content";
 import { Briefcase, Palette } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight, staggerContainer } from "@/lib/animations";
 
-const experience = [
+const defaultExperience: ExperienceItem[] = [
   {
     role: "System Engineer",
     company: "Tata Consultancy Services",
@@ -75,6 +76,14 @@ export default function Experience() {
   const lineRef = useRef(null);
   const lineInView = useInView(lineRef, { once: true, margin: "-50px" });
   const reduced = useReducedMotion();
+  const [items, setItems] = useState<ExperienceItem[]>(defaultExperience);
+
+  useEffect(() => {
+    fetch("/api/content?type=experience")
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.data)) setItems(d.data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <section
@@ -120,7 +129,7 @@ export default function Experience() {
             )}
 
             <div className="space-y-8">
-              {experience.map((item, i) => {
+              {items.map((item, i) => {
                 // Alternate left/right slide
                 const slideVariant = i % 2 === 0 ? slideLeft : slideRight;
 
@@ -154,7 +163,10 @@ export default function Experience() {
                       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            {item.type === "devops" ? (
+                            {item.iconUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={item.iconUrl} alt="" width={14} height={14} style={{ objectFit: "contain", borderRadius: 2 }} />
+                            ) : item.type === "devops" ? (
                               <Briefcase size={14} style={{ color: "var(--accent)" }} />
                             ) : (
                               <Palette size={14} style={{ color: "var(--accent)" }} />

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sun, Moon, Menu, X } from "lucide-react";
+import { Sun, Moon, Menu, X, Search } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const navLinks = [
@@ -131,6 +131,20 @@ export default function Navbar() {
 
         {/* Right controls */}
         <div className="flex items-center gap-2">
+          {/* Command palette trigger */}
+          <motion.button
+            whileHover={reduced ? {} : { scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => document.dispatchEvent(new CustomEvent("command-palette:toggle"))}
+            className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-lg border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--accent)] transition-colors cursor-pointer text-xs"
+            style={{ color: "var(--muted)" }}
+            aria-label="Open command palette"
+          >
+            <Search size={12} />
+            <span className="hidden md:inline">Search</span>
+            <kbd className="hidden md:inline ml-1 text-[10px] px-1.5 py-0.5 rounded border border-[var(--border)]">⌘K</kbd>
+          </motion.button>
+
           {mounted && (
             <motion.button
               whileHover={reduced ? {} : { scale: 1.1 }}

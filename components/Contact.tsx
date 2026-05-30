@@ -2,15 +2,10 @@
 
 import { useState, useRef, FormEvent } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import emailjs from "@emailjs/browser";
 import { Send, CheckCircle, AlertCircle, Loader2, MapPin, Mail, Copy, Check } from "lucide-react";
 import { LinkedInIcon, GitHubIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight } from "@/lib/animations";
-
-const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "YOUR_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "YOUR_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "YOUR_PUBLIC_KEY";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -116,7 +111,6 @@ function FloatingTextarea({
 
 export default function Contact() {
   const ref = useRef(null);
-  const formRef = useRef<HTMLFormElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
 
@@ -124,8 +118,10 @@ export default function Contact() {
   const [form, setForm] = useState({ from_name: "", reply_to: "", message: "" });
   const [copied, setCopied] = useState(false);
 
+  const DISPLAY_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@samuvel.in";
+
   const copyEmail = () => {
-    navigator.clipboard.writeText("samstar7550@gmail.com").then(() => {
+    navigator.clipboard.writeText(DISPLAY_EMAIL).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -139,17 +135,17 @@ export default function Contact() {
     e.preventDefault();
     setFormState("loading");
     try {
-      await emailjs.sendForm(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        formRef.current!,
-        EMAILJS_PUBLIC_KEY
-      );
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Request failed");
       setFormState("success");
       setForm({ from_name: "", reply_to: "", message: "" });
       setTimeout(() => setFormState("idle"), 4000);
     } catch (err) {
-      console.error("EmailJS error:", err);
+      console.error("Contact error:", err);
       setFormState("error");
       setTimeout(() => setFormState("idle"), 4000);
     }
@@ -193,8 +189,7 @@ export default function Contact() {
             animate={inView ? "visible" : "hidden"}
             className="lg:col-span-3"
           >
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-              <input type="hidden" name="to_email" value="samstar7550@gmail.com" />
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <FloatingInput
                   label="Name"
@@ -343,7 +338,7 @@ export default function Contact() {
                     Email
                   </div>
                   <div className="text-xs truncate" style={{ color: "var(--muted)" }}>
-                    samstar7550@gmail.com
+                    {DISPLAY_EMAIL}
                   </div>
                 </div>
                 <AnimatePresence mode="wait" initial={false}>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import type { Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, Server, Globe, ArrowRight } from "lucide-react";
@@ -8,7 +9,7 @@ import { FigmaIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 
-const projects = [
+const defaultProjects: ProjectType[] = [
   {
     title: "VizualizeHub",
     period: "Feb – Apr 2024",
@@ -59,7 +60,7 @@ const projects = [
   },
 ];
 
-const ALL_TAGS = ["All", ...Array.from(new Set(projects.flatMap((p) => p.tech)))];
+const ALL_DEFAULT_TAGS = ["All", ...Array.from(new Set(defaultProjects.flatMap((p) => p.tech)))];
 
 function ProjectIcon({ type, color }: { type: string; color: string }) {
   const iconStyle = { color };
@@ -72,11 +73,24 @@ export default function Projects() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
-
   const [activeTag, setActiveTag] = useState("All");
+  const [projectList, setProjectList] = useState<ProjectType[]>(defaultProjects);
+  const [allTags, setAllTags] = useState<string[]>(ALL_DEFAULT_TAGS);
+
+  useEffect(() => {
+    fetch("/api/content?type=projects")
+      .then(r => r.json())
+      .then(d => {
+        if (Array.isArray(d.data)) {
+          setProjectList(d.data);
+          setAllTags(["All", ...Array.from(new Set((d.data as ProjectType[]).flatMap((p) => p.tech)))]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const filtered =
-    activeTag === "All" ? projects : projects.filter((p) => p.tech.includes(activeTag));
+    activeTag === "All" ? projectList : projectList.filter((p) => p.tech.includes(activeTag));
 
   return (
     <section id="projects" className="py-24 px-4" ref={ref}>
@@ -99,7 +113,7 @@ export default function Projects() {
           transition={{ delay: 0.15, duration: 0.45, ease: EASE_OUT_EXPO }}
           className="flex flex-wrap gap-2 mb-8"
         >
-          {ALL_TAGS.map((tag) => {
+          {allTags.map((tag) => {
             const active = tag === activeTag;
             return (
               <motion.button
@@ -176,7 +190,12 @@ export default function Projects() {
                           border: `1px solid color-mix(in srgb, ${project.color} 30%, transparent)`,
                         }}
                       >
-                        <ProjectIcon type={project.type} color={project.color} />
+                        {project.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={project.iconUrl} alt="" width={18} height={18} style={{ objectFit: "contain" }} />
+                        ) : (
+                          <ProjectIcon type={project.type} color={project.color} />
+                        )}
                       </div>
                       <div>
                         <h3 className="font-heading font-bold text-base leading-tight">

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
@@ -102,6 +102,7 @@ const ICONS: Record<string, SkillIconType> = {
 interface SkillDef {
   name: string;
   note?: string;
+  iconUrl?: string;
 }
 
 interface SkillGroup {
@@ -262,7 +263,10 @@ function SkillBadge({
           transition: "transform 250ms ease, box-shadow 250ms ease",
         }}
       >
-        {iconData ? (
+        {skill.iconUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={skill.iconUrl} alt="" width={26} height={26} style={{ objectFit: "contain" }} />
+        ) : iconData ? (
           <SkillIcon iconData={iconData} isDark={isDark} size={26} />
         ) : (
           <span className="text-xs font-bold" style={{ color }}>
@@ -297,6 +301,14 @@ export default function Skills() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme !== "light";
   const reduced = useReducedMotion();
+  const [groups, setGroups] = useState<SkillGroup[]>(skillGroups);
+
+  useEffect(() => {
+    fetch("/api/content?type=skills")
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.data)) setGroups(d.data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="skills" className="py-24 px-4" ref={ref}>
@@ -318,7 +330,7 @@ export default function Skills() {
           </motion.div>
 
           <div className="space-y-10">
-            {skillGroups.map((group, gi) => (
+            {groups.map((group, gi) => (
               <motion.div
                 key={group.category}
                 initial={reduced ? {} : { opacity: 0, y: 20 }}
