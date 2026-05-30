@@ -35,9 +35,11 @@ console that lets all content be edited live — no redeploy required.
 
 ### Admin console (`/admin`)
 - **Password login** (bcrypt-hashed) gated to `ADMIN_EMAIL`
-- **Live content editing** — Skills, Experience, Projects, profile photo, and the
-  "Open to Work" toggle, all stored in Redis and rendered without a redeploy
+- **Live content editing** — Skills, Experience, Projects, Certifications, profile
+  photo, resume, and the "Open to Work" toggle, all stored in Redis and rendered
+  without a redeploy
 - **Icon / photo uploads** — Vercel Blob (private), served through a proxy route
+- **Resume upload** — PDF auto-compressed client-side (pdf-lib) before upload
 - **Analytics dashboard** — 30-day visitor chart (recharts)
 - **Change password** — OTP emailed to the admin address
 - **Change notifications** — every content save emails the admin

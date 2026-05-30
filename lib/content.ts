@@ -12,17 +12,119 @@ export type Project = {
   type: "web" | "devops" | "design"; color: string; featured: boolean;
   iconUrl?: string;
 };
-export type Settings = { available: boolean; photoUrl?: string };
-export type ContentType = "settings" | "skills" | "experience" | "projects";
+export type Certification = {
+  title: string; badge: string; issuer: string;
+  date: string; status: "issued" | "progress"; color: string;
+};
+export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string };
+
+export type ProfileStat = { prefix: string; value: number; suffix: string; label: string };
+export type EducationItem = { degree: string; school: string; score: string; years: string };
+export type Profile = {
+  // Hero
+  name: string;
+  roles: string[];
+  tagline: string;
+  heroBadge: string;
+  statValue: string;
+  statLabel: string;
+  availableText: string;
+  unavailableText: string;
+  // About
+  aboutTitle: string;
+  bio: string[];            // paragraphs; **text** = bold, ==text== = accent pill
+  quickInfo: string[];
+  stats: ProfileStat[];
+  education: EducationItem[];
+  // Contact / social
+  contactLine: string;
+  email: string;
+  linkedin: string;
+  github: string;
+};
+
+// Coerce education to an array (tolerates the legacy single-object shape in Redis)
+export function asEducation(p: Profile): EducationItem[] {
+  const e = p.education as unknown;
+  if (Array.isArray(e)) return e as EducationItem[];
+  if (e && typeof e === "object") return [e as EducationItem];
+  return [];
+}
+
+// ─── Color palettes ────────────────────────────────────────────────────────────
+export type Palette = { id: string; name: string; light: string; dark: string };
+
+export const PALETTES: Palette[] = [
+  { id: "default",  name: "Teal / Blue",  light: "#0F64D2", dark: "#00C8D7" },
+  { id: "violet",   name: "Violet",       light: "#7C3AED", dark: "#A78BFA" },
+  { id: "emerald",  name: "Emerald",      light: "#059669", dark: "#34D399" },
+  { id: "rose",     name: "Rose",         light: "#E11D48", dark: "#FB7185" },
+  { id: "amber",    name: "Amber",        light: "#D97706", dark: "#FBBF24" },
+  { id: "sky",      name: "Sky",          light: "#0284C7", dark: "#38BDF8" },
+  { id: "fuchsia",  name: "Fuchsia",      light: "#C026D3", dark: "#E879F9" },
+  { id: "orange",   name: "Orange",       light: "#EA580C", dark: "#FB923C" },
+  { id: "lime",     name: "Lime",         light: "#65A30D", dark: "#A3E635" },
+  { id: "indigo",   name: "Indigo",       light: "#4F46E5", dark: "#818CF8" },
+];
+
+// CSS that overrides the accent for both light (:root) and dark (.dark) themes
+export function paletteCss(p: Palette): string {
+  return `:root{--accent:${p.light}}.dark{--accent:${p.dark}}`;
+}
+
+export type ContentType =
+  | "settings" | "profile" | "skills" | "experience" | "projects" | "certifications";
 
 export const CONTENT_KEYS: Record<ContentType, string> = {
-  settings:   "portfolio:content:settings",
-  skills:     "portfolio:content:skills",
-  experience: "portfolio:content:experience",
-  projects:   "portfolio:content:projects",
+  settings:       "portfolio:content:settings",
+  profile:        "portfolio:content:profile",
+  skills:         "portfolio:content:skills",
+  experience:     "portfolio:content:experience",
+  projects:       "portfolio:content:projects",
+  certifications: "portfolio:content:certifications",
 };
 
 export const DEFAULT_SETTINGS: Settings = { available: true };
+
+export const DEFAULT_PROFILE: Profile = {
+  name: "Samuvel L",
+  roles: ["DevOps Engineer", "Cloud Engineer", "System Engineer"],
+  tagline: "Building the pipelines that ship code",
+  heroBadge: "Top 2% · TCS Ignite · #6 / 280",
+  statValue: "#6 / 280",
+  statLabel: "TCS Ignite Rank",
+  availableText: "Available for DevOps & Cloud roles · Remote · India",
+  unavailableText: "Not currently open to new roles",
+  aboutTitle: "System Engineer @ TCS",
+  bio: [
+    "I chose DevOps because I wanted to be where **code becomes real** — where a developer's push becomes a running service. At TCS I've grown from Graduate Trainee to System Engineer in 20 months, building **hands-on challenge environments** with Kubernetes, Docker, Ansible, Jenkins, GitLab, and Azure — making tools break, recover, and behave in edge cases. That's deeper technical exposure than most junior engineers get.",
+    "I work across the full **Microsoft DevOps stack** — configuring Azure Pipelines, managing repos and boards, and storing build artifacts. I hold the ==AZ-900== and ==GitHub Copilot== certifications and am preparing for **AZ-104** to deepen my Azure infrastructure skills.",
+    "My background in **full-stack development** (Next.js, React, TypeScript) and **UI/UX design** gives me an edge most DevOps engineers don't have — I understand the entire delivery lifecycle, from design to deployment. Now looking for a hands-on **DevOps or Cloud Engineer role** where I can own infrastructure and solve real delivery problems.",
+  ],
+  quickInfo: [
+    "System Engineer @ Tata Consultancy Services",
+    "Remote · India",
+    "AZ-900 Certified · GitHub Copilot Certified",
+  ],
+  stats: [
+    { prefix: "Top ", value: 2,  suffix: "%",     label: "TCS Ignite Cohort" },
+    { prefix: "#",    value: 6,  suffix: "/280",  label: "TCS Ignite Ranking" },
+    { prefix: "",     value: 89, suffix: "%",     label: "B.Sc. Score" },
+    { prefix: "",     value: 2,  suffix: "+ yrs", label: "Design Experience" },
+  ],
+  education: [
+    {
+      degree: "B.Sc Computer Science",
+      school: "Sankara College of Arts & Science",
+      score: "89%",
+      years: "2021 – 2024",
+    },
+  ],
+  contactLine: "Open to DevOps & Cloud roles · Remote · India",
+  email: "contact@samuvel.in",
+  linkedin: "https://linkedin.com/in/samuvel7550",
+  github: "https://github.com/Samstar7550",
+};
 
 export const DEFAULT_SKILLS: SkillGroup[] = [
   { category: "DevOps Tools", skills: [
@@ -114,9 +216,18 @@ export const DEFAULT_PROJECTS: Project[] = [
   },
 ];
 
+export const DEFAULT_CERTIFICATIONS: Certification[] = [
+  { title: "Microsoft Azure Fundamentals", badge: "AZ-900", issuer: "Microsoft", date: "Aug 2025", status: "issued", color: "#0078D4" },
+  { title: "GitHub Copilot Certified", badge: "GH", issuer: "GitHub", date: "Mar 2026", status: "issued", color: "#2088FF" },
+  { title: "Azure Administrator Associate", badge: "AZ-104", issuer: "Microsoft", date: "In Progress", status: "progress", color: "#0078D4" },
+  { title: "UI/UX Design", badge: "UX", issuer: "Internshala", date: "Mar 2023", status: "issued", color: "#FF7262" },
+];
+
 export const DEFAULTS: Record<ContentType, unknown> = {
-  settings:   DEFAULT_SETTINGS,
-  skills:     DEFAULT_SKILLS,
-  experience: DEFAULT_EXPERIENCE,
-  projects:   DEFAULT_PROJECTS,
+  settings:       DEFAULT_SETTINGS,
+  profile:        DEFAULT_PROFILE,
+  skills:         DEFAULT_SKILLS,
+  experience:     DEFAULT_EXPERIENCE,
+  projects:       DEFAULT_PROJECTS,
+  certifications: DEFAULT_CERTIFICATIONS,
 };

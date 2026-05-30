@@ -2,10 +2,39 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { GraduationCap, MapPin, Building2, Award } from "lucide-react";
+import { GraduationCap } from "lucide-react";
 import Image from "next/image";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO } from "@/lib/animations";
+import { DEFAULT_PROFILE, Profile, asEducation } from "@/lib/content";
+
+// Render bio markup:  **text** → bold (foreground)   ==text== → blue accent pill
+function renderBio(text: string) {
+  return text.split(/(\*\*[^*]+\*\*|==[^=]+==)/g).map((seg, i) => {
+    if (seg.startsWith("**") && seg.endsWith("**")) {
+      return (
+        <span key={i} className="font-medium" style={{ color: "var(--foreground)" }}>
+          {seg.slice(2, -2)}
+        </span>
+      );
+    }
+    if (seg.startsWith("==") && seg.endsWith("==")) {
+      return (
+        <span
+          key={i}
+          className="font-semibold px-1.5 py-0.5 rounded text-sm"
+          style={{
+            background: "color-mix(in srgb, var(--accent) 15%, transparent)",
+            color: "var(--accent)",
+          }}
+        >
+          {seg.slice(2, -2)}
+        </span>
+      );
+    }
+    return <span key={i}>{seg}</span>;
+  });
+}
 
 // ─── Shared viewport config ───────────────────────────────────────────────────
 const VP = { once: true, margin: "-60px" } as const;
@@ -64,20 +93,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-const stats = [
-  { prefix: "Top ", target: 2,  suffix: "%",    label: "TCS Ignite Cohort" },
-  { prefix: "#",   target: 6,  suffix: "/280",  label: "TCS Ignite Ranking" },
-  { prefix: "",    target: 89, suffix: "%",     label: "B.Sc. Score" },
-  { prefix: "",    target: 2,  suffix: "+ yrs", label: "Design Experience" },
-];
-
-const quickInfo = [
-  { icon: Building2, text: "System Engineer @ Tata Consultancy Services" },
-  { icon: MapPin,    text: "Remote · India" },
-  { icon: Award,     text: "AZ-900 Certified · GitHub Copilot Certified" },
-];
-
 // ─── Reusable animation wrappers ──────────────────────────────────────────────
 function FadeUp({ children, delay = 0, className = "" }: {
   children: React.ReactNode; delay?: number; className?: string;
@@ -120,6 +135,14 @@ export default function About() {
   const decorRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: decorRef, offset: ["start end", "end start"] });
   const decorY = useTransform(scrollYProgress, [0, 1], ["-20%", "20%"]);
+  const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+
+  useEffect(() => {
+    fetch("/api/content?type=profile")
+      .then(r => r.json())
+      .then(d => { if (d.data) setProfile(d.data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <section id="about" className="py-24 px-4 max-w-6xl mx-auto relative overflow-hidden">
@@ -148,101 +171,36 @@ export default function About() {
               >
                 <Image
                   src="/SAM.JPG"
-                  alt="Samuvel L"
+                  alt={profile.name}
                   width={64}
                   height={64}
                   className="w-full h-full object-cover object-top"
                 />
               </div>
               <div>
-                <p className="font-heading font-bold text-lg leading-tight">Samuvel L</p>
+                <p className="font-heading font-bold text-lg leading-tight">{profile.name}</p>
                 <p className="text-sm" style={{ color: "var(--accent)" }}>
-                  System Engineer @ TCS
+                  {profile.aboutTitle}
                 </p>
               </div>
             </div>
           </SlideIn>
 
-          {/* Para 1 */}
-          <FadeUp delay={0.12}>
-            <p className="text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-              I chose DevOps because I wanted to be where{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                code becomes real
-              </span>{" "}
-              — where a developer&apos;s push becomes a running service. At TCS I&apos;ve grown from
-              Graduate Trainee to System Engineer in 20 months, building{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                hands-on challenge environments
-              </span>{" "}
-              with Kubernetes, Docker, Ansible, Jenkins, GitLab, and Azure — making tools break,
-              recover, and behave in edge cases. That&apos;s deeper technical exposure than most
-              junior engineers get.
-            </p>
-          </FadeUp>
-
-          {/* Para 2 */}
-          <FadeUp delay={0.2}>
-            <p className="text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-              I work across the full{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                Microsoft DevOps stack
-              </span>{" "}
-              — configuring Azure Pipelines, managing repos and boards, and storing build artifacts.
-              I hold the{" "}
-              <span
-                className="font-semibold px-1.5 py-0.5 rounded text-sm"
-                style={{
-                  background: "color-mix(in srgb, var(--accent) 15%, transparent)",
-                  color: "var(--accent)",
-                }}
-              >
-                AZ-900
-              </span>{" "}
-              and{" "}
-              <span
-                className="font-semibold px-1.5 py-0.5 rounded text-sm"
-                style={{
-                  background: "color-mix(in srgb, var(--accent) 15%, transparent)",
-                  color: "var(--accent)",
-                }}
-              >
-                GitHub Copilot
-              </span>{" "}
-              certifications and am preparing for{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                AZ-104
-              </span>{" "}
-              to deepen my Azure infrastructure skills.
-            </p>
-          </FadeUp>
-
-          {/* Para 3 */}
-          <FadeUp delay={0.28}>
-            <p className="text-base leading-relaxed" style={{ color: "var(--muted)" }}>
-              My background in{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                full-stack development
-              </span>{" "}
-              (Next.js, React, TypeScript) and{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                UI/UX design
-              </span>{" "}
-              gives me an edge most DevOps engineers don&apos;t have — I understand the entire
-              delivery lifecycle, from design to deployment. Now looking for a hands-on{" "}
-              <span className="font-medium" style={{ color: "var(--foreground)" }}>
-                DevOps or Cloud Engineer role
-              </span>{" "}
-              where I can own infrastructure and solve real delivery problems.
-            </p>
-          </FadeUp>
+          {/* Bio paragraphs */}
+          {profile.bio.map((para, i) => (
+            <FadeUp key={i} delay={0.12 + i * 0.08}>
+              <p className="text-base leading-relaxed" style={{ color: "var(--muted)" }}>
+                {renderBio(para)}
+              </p>
+            </FadeUp>
+          ))}
 
           {/* Quick info — each slides in from left with increasing delay */}
           <div className="space-y-3 pt-2">
-            {quickInfo.map(({ icon: Icon, text }, i) => (
+            {profile.quickInfo.map((text, i) => (
               <SlideIn key={text} from="left" delay={0.32 + i * 0.1}>
                 <div className="flex items-center gap-3">
-                  <Icon size={16} aria-hidden="true" className="shrink-0" style={{ color: "var(--accent)" }} />
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" aria-hidden="true" style={{ background: "var(--accent)" }} />
                   <span className="text-sm" style={{ color: "var(--muted)" }}>{text}</span>
                 </div>
               </SlideIn>
@@ -255,9 +213,9 @@ export default function About() {
 
           {/* Stats — each card scales in with stagger */}
           <div className="grid grid-cols-2 gap-3">
-            {stats.map((s, i) => (
+            {profile.stats.map((s, i) => (
               <motion.div
-                key={s.label}
+                key={s.label + i}
                 initial={reduced ? {} : { opacity: 0, scale: 0.82, y: 16 }}
                 whileInView={reduced ? {} : { opacity: 1, scale: 1, y: 0 }}
                 viewport={VP}
@@ -270,51 +228,55 @@ export default function About() {
                 className="rounded-xl p-4 border border-[var(--border)] bg-[var(--surface-1)] transition-colors hover:border-[var(--accent)] cursor-default"
               >
                 <div className="font-heading text-2xl font-bold mb-1" style={{ color: "var(--accent)" }}>
-                  <CountUp prefix={s.prefix} target={s.target} suffix={s.suffix} />
+                  <CountUp prefix={s.prefix} target={s.value} suffix={s.suffix} />
                 </div>
                 <div className="text-xs" style={{ color: "var(--muted)" }}>{s.label}</div>
               </motion.div>
             ))}
           </div>
 
-          {/* Education card — slides in from right */}
-          <SlideIn from="right" delay={0.38}>
-            <motion.div
-              whileHover={reduced ? {} : { scale: 1.01, y: -2 }}
-              className="rounded-xl p-5 border border-[var(--border)] bg-[var(--surface-1)] transition-colors hover:border-[var(--accent)]"
-            >
-              <div className="flex items-start gap-4">
-                <motion.div
-                  whileHover={reduced ? {} : { rotate: [0, -8, 8, 0] }}
-                  transition={{ duration: 0.4 }}
-                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                  style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)" }}
-                >
-                  <GraduationCap size={20} aria-hidden="true" style={{ color: "var(--accent)" }} />
-                </motion.div>
-                <div>
-                  <div className="font-semibold font-heading text-sm mb-0.5">
-                    B.Sc Computer Science
-                  </div>
-                  <div className="text-xs mb-2" style={{ color: "var(--muted)" }}>
-                    Sankara College of Arts &amp; Science
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="text-xs px-2 py-0.5 rounded-full font-medium"
-                      style={{
-                        background: "color-mix(in srgb, var(--accent) 15%, transparent)",
-                        color: "var(--accent)",
-                      }}
-                    >
-                      89%
-                    </span>
-                    <span className="text-xs" style={{ color: "var(--muted)" }}>2021 – 2024</span>
+          {/* Education cards — slide in from right */}
+          {asEducation(profile).map((edu, i) => (
+            <SlideIn key={i} from="right" delay={0.38 + i * 0.1}>
+              <motion.div
+                whileHover={reduced ? {} : { scale: 1.01, y: -2 }}
+                className="rounded-xl p-5 border border-[var(--border)] bg-[var(--surface-1)] transition-colors hover:border-[var(--accent)]"
+              >
+                <div className="flex items-start gap-4">
+                  <motion.div
+                    whileHover={reduced ? {} : { rotate: [0, -8, 8, 0] }}
+                    transition={{ duration: 0.4 }}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: "color-mix(in srgb, var(--accent) 15%, transparent)" }}
+                  >
+                    <GraduationCap size={20} aria-hidden="true" style={{ color: "var(--accent)" }} />
+                  </motion.div>
+                  <div>
+                    <div className="font-semibold font-heading text-sm mb-0.5">
+                      {edu.degree}
+                    </div>
+                    <div className="text-xs mb-2" style={{ color: "var(--muted)" }}>
+                      {edu.school}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {edu.score && (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            background: "color-mix(in srgb, var(--accent) 15%, transparent)",
+                            color: "var(--accent)",
+                          }}
+                        >
+                          {edu.score}
+                        </span>
+                      )}
+                      <span className="text-xs" style={{ color: "var(--muted)" }}>{edu.years}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </SlideIn>
+              </motion.div>
+            </SlideIn>
+          ))}
 
         </div>
       </div>

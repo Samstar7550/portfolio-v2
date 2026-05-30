@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Send, CheckCircle, AlertCircle, Loader2, MapPin, Mail, Copy, Check } from "lucide-react";
 import { LinkedInIcon, GitHubIcon } from "@/components/BrandIcons";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight } from "@/lib/animations";
+import { DEFAULT_PROFILE, Profile } from "@/lib/content";
+
+const stripUrl = (u: string) => u.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -117,8 +120,16 @@ export default function Contact() {
   const [formState, setFormState] = useState<FormState>("idle");
   const [form, setForm] = useState({ from_name: "", reply_to: "", message: "" });
   const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
 
-  const DISPLAY_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@samuvel.in";
+  useEffect(() => {
+    fetch("/api/content?type=profile")
+      .then(r => r.json())
+      .then(d => { if (d.data) setProfile(d.data); })
+      .catch(() => {});
+  }, []);
+
+  const DISPLAY_EMAIL = profile.email;
 
   const copyEmail = () => {
     navigator.clipboard.writeText(DISPLAY_EMAIL).then(() => {
@@ -178,7 +189,7 @@ export default function Contact() {
           style={{ color: "var(--muted)" }}
         >
           <MapPin size={14} style={{ color: "var(--accent)" }} />
-          Open to DevOps &amp; Cloud roles · Remote · India
+          {profile.contactLine}
         </motion.p>
 
         <div className="grid lg:grid-cols-5 gap-10">
@@ -369,7 +380,7 @@ export default function Contact() {
               </motion.button>
               {/* LinkedIn */}
               <motion.a
-                href="https://linkedin.com/in/samuvel7550"
+                href={profile.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={reduced ? {} : { x: 4 }}
@@ -387,14 +398,14 @@ export default function Contact() {
                     LinkedIn
                   </div>
                   <div className="text-xs" style={{ color: "var(--muted)" }}>
-                    linkedin.com/in/samuvel7550
+                    {stripUrl(profile.linkedin)}
                   </div>
                 </div>
               </motion.a>
 
               {/* GitHub */}
               <motion.a
-                href="https://github.com/Samstar7550"
+                href={profile.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={reduced ? {} : { x: 4 }}
@@ -417,7 +428,7 @@ export default function Contact() {
                     GitHub
                   </div>
                   <div className="text-xs" style={{ color: "var(--muted)" }}>
-                    github.com/Samstar7550
+                    {stripUrl(profile.github)}
                   </div>
                 </div>
               </motion.a>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import PaletteProvider from "@/components/PaletteProvider";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -65,6 +66,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        <PaletteProvider />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

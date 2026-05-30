@@ -20,7 +20,15 @@ const NAV_ITEMS = [
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState("/resume.pdf");
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    fetch("/api/content?type=settings")
+      .then((r) => r.json())
+      .then((d) => { if (d.data?.resumeUrl) setResumeUrl(d.data.resumeUrl); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -125,7 +133,7 @@ export default function CommandPalette() {
                     onSelect={() =>
                       run(() => {
                         const a = document.createElement("a");
-                        a.href = "/resume.pdf";
+                        a.href = resumeUrl;
                         a.download = "Samuvel_Resume.pdf";
                         a.click();
                       })

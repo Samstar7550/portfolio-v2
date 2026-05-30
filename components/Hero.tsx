@@ -6,8 +6,7 @@ import { ArrowDown, Download, ExternalLink, Star } from "lucide-react";
 import Image from "next/image";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO } from "@/lib/animations";
-
-const roles = ["DevOps Engineer", "Cloud Engineer", "System Engineer"];
+import { DEFAULT_PROFILE, Profile } from "@/lib/content";
 
 function useTypewriter(words: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
   const [displayed, setDisplayed] = useState("");
@@ -87,11 +86,13 @@ function FloatingParticles() {
 const BASE = 1.2;
 
 export default function Hero() {
-  const role = useTypewriter(roles);
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const [available, setAvailable] = useState(true);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [resumeUrl, setResumeUrl] = useState("/resume.pdf");
+  const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
+  const role = useTypewriter(profile.roles);
 
   useEffect(() => {
     fetch("/api/content?type=settings")
@@ -99,9 +100,19 @@ export default function Hero() {
       .then(d => {
         if (typeof d.data?.available === "boolean") setAvailable(d.data.available);
         if (d.data?.photoUrl) setPhotoUrl(d.data.photoUrl);
+        if (d.data?.resumeUrl) setResumeUrl(d.data.resumeUrl);
       })
       .catch(() => {});
+    fetch("/api/content?type=profile")
+      .then(r => r.json())
+      .then(d => { if (d.data) setProfile(d.data); })
+      .catch(() => {});
   }, []);
+
+  // Name → first words + accented last word
+  const nameParts = profile.name.trim().split(" ");
+  const nameLast = nameParts.length > 1 ? nameParts.pop() : "";
+  const nameFirst = nameParts.join(" ");
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -146,9 +157,7 @@ export default function Hero() {
                 }}
               />
               <span style={{ color: "var(--muted)" }}>
-                {available
-                  ? "Available for DevOps & Cloud roles · Remote · India"
-                  : "Not currently open to new roles"}
+                {available ? profile.availableText : profile.unavailableText}
               </span>
             </motion.div>
 
@@ -159,8 +168,8 @@ export default function Hero() {
               transition={{ delay: BASE + 0.15, duration: 0.6, ease: EASE_OUT_EXPO }}
               className="font-heading text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-4 leading-none"
             >
-              Samuvel{" "}
-              <span style={{ color: "var(--accent)" }}>L</span>
+              {nameFirst}{nameLast ? " " : ""}
+              <span style={{ color: "var(--accent)" }}>{nameLast}</span>
             </motion.h1>
 
             {/* 3 — Typewriter role */}
@@ -189,7 +198,7 @@ export default function Hero() {
               className="text-base sm:text-lg mb-8 max-w-md leading-relaxed"
               style={{ color: "var(--muted)" }}
             >
-              Building the pipelines that ship code
+              {profile.tagline}
             </motion.p>
 
             {/* 5 — CTA buttons */}
@@ -218,8 +227,8 @@ export default function Hero() {
               </motion.button>
 
               <motion.a
-                href="/resume.pdf"
-                download
+                href={resumeUrl}
+                download="Samuvel_Resume.pdf"
                 whileHover={reduced ? {} : { scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className="group relative flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-sm border border-[var(--border)] bg-[var(--surface-1)] hover:border-[var(--accent)] overflow-hidden transition-colors cursor-pointer"
@@ -249,7 +258,7 @@ export default function Hero() {
                 className="flex items-center gap-2"
               >
                 <Star size={12} style={{ color: "var(--accent)" }} />
-                <span style={{ color: "var(--muted)" }}>Top 2% · TCS Ignite · #6 / 280</span>
+                <span style={{ color: "var(--muted)" }}>{profile.heroBadge}</span>
               </motion.div>
             </motion.div>
           </div>
@@ -330,9 +339,9 @@ export default function Hero() {
                 </span>
                 <div>
                   <div className="font-semibold" style={{ color: "var(--foreground)" }}>
-                    #6 / 280
+                    {profile.statValue}
                   </div>
-                  <div style={{ color: "var(--muted)" }}>TCS Ignite Rank</div>
+                  <div style={{ color: "var(--muted)" }}>{profile.statLabel}</div>
                 </div>
               </motion.div>
             </motion.div>

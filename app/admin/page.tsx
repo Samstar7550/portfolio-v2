@@ -9,9 +9,13 @@ import {
   Settings, Layers, Briefcase, FolderOpen, LogOut, Plus, Trash2,
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
+  Award, FileText, UserCircle, Check,
 } from "lucide-react";
 import Link from "next/link";
-import type { Skill, SkillGroup, ExperienceItem, Project, Settings as SettingsType } from "@/lib/content";
+import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, Settings as SettingsType } from "@/lib/content";
+import { DEFAULT_PROFILE, asEducation, PALETTES } from "@/lib/content";
+import { applyPalette } from "@/components/PaletteProvider";
+import { PDFDocument } from "pdf-lib";
 import type { VisitorRecord } from "@/lib/visitor";
 import type { Lead } from "@/lib/lead";
 
@@ -123,15 +127,17 @@ function card(children: React.ReactNode, className = "") {
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "settings" | "skills" | "experience" | "projects";
+type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications";
 type AuthStep = "login" | "forgot" | "done";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "overview",   label: "Overview",   icon: <BarChart2 size={15} /> },
-  { id: "settings",  label: "Settings",   icon: <Settings size={15} /> },
-  { id: "skills",    label: "Skills",     icon: <Layers size={15} /> },
-  { id: "experience",label: "Experience", icon: <Briefcase size={15} /> },
-  { id: "projects",  label: "Projects",   icon: <FolderOpen size={15} /> },
+  { id: "overview",       label: "Overview",       icon: <BarChart2 size={15} /> },
+  { id: "profile",        label: "Profile",        icon: <UserCircle size={15} /> },
+  { id: "settings",       label: "Settings",       icon: <Settings size={15} /> },
+  { id: "skills",         label: "Skills",         icon: <Layers size={15} /> },
+  { id: "experience",     label: "Experience",     icon: <Briefcase size={15} /> },
+  { id: "projects",       label: "Projects",       icon: <FolderOpen size={15} /> },
+  { id: "certifications", label: "Certifications", icon: <Award size={15} /> },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -167,6 +173,8 @@ export default function AdminPage() {
   const [skills, setSkills]         = useState<SkillGroup[] | null>(null);
   const [experience, setExperience] = useState<ExperienceItem[] | null>(null);
   const [projects, setProjects]     = useState<Project[] | null>(null);
+  const [certs, setCerts]           = useState<Certification[] | null>(null);
+  const [profile, setProfile]       = useState<Profile | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -189,6 +197,8 @@ export default function AdminPage() {
     load("skills", setSkills as (d: unknown) => void);
     load("experience", setExperience as (d: unknown) => void);
     load("projects", setProjects as (d: unknown) => void);
+    load("certifications", setCerts as (d: unknown) => void);
+    load("profile", setProfile as (d: unknown) => void);
     // load stats
     fetch("/api/stats", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => { if (!d.error) setStats(d); }).catch(() => {});
@@ -581,6 +591,13 @@ export default function AdminPage() {
                 </div>
               )}
 
+              {/* ── Profile tab ── */}
+              {tab === "profile" && (
+                <ProfileTab profile={profile} onSave={async (p) => {
+                  if (await save("profile", p)) setProfile(p);
+                }} />
+              )}
+
               {/* ── Settings tab ── */}
               {tab === "settings" && (
                 <SettingsTab settings={settings} uploadIcon={uploadIcon} token={token} onSave={async (s) => {
@@ -608,6 +625,13 @@ export default function AdminPage() {
                   if (await save("projects", p)) setProjects(p);
                 }} />
               )}
+
+              {/* ── Certifications tab ── */}
+              {tab === "certifications" && (
+                <CertificationsTab certs={certs} onSave={async (c) => {
+                  if (await save("certifications", c)) setCerts(c);
+                }} />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -626,6 +650,11 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
 }) {
   const [available, setAvailable] = useState(settings?.available ?? true);
   const [photoUrl, setPhotoUrl] = useState(settings?.photoUrl ?? "");
+  const [resumeUrl, setResumeUrl] = useState(settings?.resumeUrl ?? "");
+  const [palette, setPalette] = useState(settings?.palette ?? "default");
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const [resumeError, setResumeError] = useState("");
+  const [resumeInfo, setResumeInfo] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -643,6 +672,8 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
     if (settings) {
       setAvailable(settings.available);
       setPhotoUrl(settings.photoUrl ?? "");
+      setResumeUrl(settings.resumeUrl ?? "");
+      setPalette(settings.palette ?? "default");
     }
   }, [settings]);
 
@@ -691,10 +722,51 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
 
   const persist = async (patch: Partial<SettingsType>) => {
     setSaving(true);
-    const next = { available, photoUrl: photoUrl || undefined, ...patch };
+    const next = { available, photoUrl: photoUrl || undefined, resumeUrl: resumeUrl || undefined, palette, ...patch };
     await onSave(next);
     setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const choosePalette = async (id: string) => {
+    setPalette(id);
+    applyPalette(id);          // live preview
+    await persist({ palette: id });
+  };
+
+  // Compress a PDF client-side (pdf-lib object streams), keep whichever is smaller, then upload
+  const handleResumeUpload = async (file: File) => {
+    setResumeError(""); setResumeInfo("");
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) { setResumeError("Please upload a PDF file."); return; }
+    setResumeUploading(true);
+    try {
+      const original = new Uint8Array(await file.arrayBuffer());
+      let out: Uint8Array = original;
+      try {
+        const doc = await PDFDocument.load(original, { ignoreEncryption: true });
+        const compressed = await doc.save({ useObjectStreams: true });
+        if (compressed.byteLength < original.byteLength) out = compressed;
+      } catch { /* compression failed — fall back to original bytes */ }
+
+      const origKB = Math.round(original.byteLength / 1024);
+      const finalKB = Math.round(out.byteLength / 1024);
+      const savedBytes = original.byteLength - out.byteLength;
+      const pct = savedBytes > 0 ? Math.round((savedBytes / original.byteLength) * 100) : 0;
+
+      const uploadFile = new File([out as BlobPart], "resume.pdf", { type: "application/pdf" });
+      const url = await uploadIcon(uploadFile);
+      setResumeUrl(url);
+      await persist({ resumeUrl: url });
+      setResumeInfo(
+        pct > 0
+          ? `Compressed ${origKB}KB → ${finalKB}KB (−${pct}%)`
+          : `Uploaded (${finalKB}KB — already optimised)`
+      );
+    } catch {
+      setResumeError("Upload failed. Try again.");
+    }
+    setResumeUploading(false);
   };
 
   const toggle = async () => {
@@ -739,6 +811,88 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume */}
+      {card(
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-medium mb-0.5">Resume (PDF)</p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              Replaces the downloadable resume. Automatically compressed on upload.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)" }}>
+              <FileText size={20} style={{ color: "var(--accent)" }} />
+            </div>
+            <input id="resume-input" type="file" accept="application/pdf,.pdf" className="hidden"
+              onChange={e => e.target.files?.[0] && handleResumeUpload(e.target.files[0])} />
+            <label htmlFor="resume-input"
+              className="text-xs px-3 py-2 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer inline-flex items-center gap-2"
+              style={{ color: "var(--muted)" }}>
+              {resumeUploading ? <Loader2 size={13} className="animate-spin" /> : <ImagePlus size={13} />}
+              {resumeUploading ? "Processing…" : "Upload PDF"}
+            </label>
+            {resumeUrl && (
+              <a href={resumeUrl} target="_blank" rel="noopener noreferrer"
+                className="text-xs inline-flex items-center gap-1 hover:text-[var(--accent)] transition-colors" style={{ color: "var(--muted)" }}>
+                <ExternalLink size={12} /> View current
+              </a>
+            )}
+            {resumeUrl && (
+              <button onClick={async () => { setResumeUrl(""); setResumeInfo(""); await persist({ resumeUrl: undefined }); }}
+                className="text-xs text-red-400 hover:text-red-500 transition-colors cursor-pointer">
+                Revert to default
+              </button>
+            )}
+          </div>
+          {resumeInfo && <p className="text-xs" style={{ color: "#22c55e" }}>{resumeInfo}</p>}
+          {resumeError && <p className="text-xs text-red-400">{resumeError}</p>}
+        </div>
+      )}
+
+      {/* Color palette */}
+      {card(
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm font-medium mb-0.5">Color Palette</p>
+            <p className="text-xs" style={{ color: "var(--muted)" }}>
+              Changes the accent colour across the whole site (light &amp; dark modes).
+            </p>
+          </div>
+          <div className="grid grid-cols-5 gap-3">
+            {PALETTES.map((pal) => {
+              const active = palette === pal.id;
+              return (
+                <button
+                  key={pal.id}
+                  onClick={() => choosePalette(pal.id)}
+                  className="flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-colors cursor-pointer"
+                  style={{
+                    borderColor: active ? pal.dark : "var(--border)",
+                    background: active ? `color-mix(in srgb, ${pal.dark} 10%, transparent)` : "transparent",
+                  }}
+                  title={pal.name}
+                >
+                  <span className="relative w-8 h-8 rounded-full shrink-0"
+                    style={{ background: `linear-gradient(135deg, ${pal.light}, ${pal.dark})` }}>
+                    {active && (
+                      <span className="absolute inset-0 flex items-center justify-center text-white">
+                        <Check size={14} />
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-[10px] truncate w-full text-center"
+                    style={{ color: active ? "var(--foreground)" : "var(--muted)" }}>
+                    {pal.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -1149,6 +1303,231 @@ function ProjectForm({ item, onChange, uploadIcon }: { item: Project; onChange: 
         <input value={item.link ?? ""} onChange={e => set("link", e.target.value || null)} placeholder="Link URL (optional)" className={inp} style={{ color: "var(--foreground)" }} />
         <input value={item.linkLabel ?? ""} onChange={e => set("linkLabel", e.target.value || null)} placeholder="Link label (optional)" className={inp} style={{ color: "var(--foreground)" }} />
       </div>
+    </div>
+  );
+}
+
+// ─── Certifications tab ────────────────────────────────────────────────────────
+
+function CertificationsTab({ certs, onSave }: { certs: Certification[] | null; onSave: (c: Certification[]) => Promise<void> }) {
+  const [items, setItems] = useState<Certification[]>(certs ?? []);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { if (certs) setItems(certs); }, [certs]);
+
+  const doSave = async () => {
+    setSaving(true); await onSave(items);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const update = (i: number, item: Certification) => setItems(arr => arr.map((x, j) => j === i ? item : x));
+  const remove = (i: number) => { setItems(arr => arr.filter((_, j) => j !== i)); setEditing(null); };
+  const add = () => {
+    const blank: Certification = { title: "", badge: "", issuer: "", date: "", status: "issued", color: "#0078D4" };
+    setItems(arr => [blank, ...arr]); setEditing(0);
+  };
+
+  const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
+          <Plus size={14} /> Add Certification
+        </button>
+        <button onClick={doSave} disabled={saving}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer"
+          style={{ background: "var(--accent)" }}>
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saved ? "Saved!" : "Save All"}
+        </button>
+      </div>
+
+      {items.map((item, i) => (
+        <div key={i} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
+          <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => setEditing(editing === i ? null : i)}>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                style={{ background: `color-mix(in srgb, ${item.color} 20%, transparent)`, color: item.color }}>
+                {item.badge || "—"}
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{item.title || <span style={{ color: "var(--muted)" }}>Untitled</span>}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{item.issuer} {item.date && `· ${item.date}`}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs px-2 py-0.5 rounded-full"
+                style={{
+                  background: item.status === "issued" ? "color-mix(in srgb, #22c55e 15%, transparent)" : "color-mix(in srgb, #f59e0b 15%, transparent)",
+                  color: item.status === "issued" ? "#22c55e" : "#f59e0b",
+                }}>
+                {item.status === "issued" ? "Issued" : "In Progress"}
+              </span>
+              <button onClick={e => { e.stopPropagation(); remove(i); }} className="cursor-pointer hover:text-red-400 transition-colors" style={{ color: "var(--muted)" }}><Trash2 size={14} /></button>
+              {editing === i ? <ChevronUp size={14} style={{ color: "var(--muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--muted)" }} />}
+            </div>
+          </div>
+
+          {editing === i && (
+            <div className="px-5 pb-5 border-t border-[var(--border)] space-y-3" style={{ paddingTop: 16 }}>
+              <div className="grid grid-cols-2 gap-3">
+                <input value={item.title} onChange={e => update(i, { ...item, title: e.target.value })} placeholder="Title" className={inp} style={{ color: "var(--foreground)" }} />
+                <input value={item.issuer} onChange={e => update(i, { ...item, issuer: e.target.value })} placeholder="Issuer" className={inp} style={{ color: "var(--foreground)" }} />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <input value={item.badge} onChange={e => update(i, { ...item, badge: e.target.value })} placeholder="Badge (e.g. AZ-900)" className={inp} style={{ color: "var(--foreground)" }} />
+                <input value={item.date} onChange={e => update(i, { ...item, date: e.target.value })} placeholder="Date / In Progress" className={inp} style={{ color: "var(--foreground)" }} />
+                <select value={item.status} onChange={e => update(i, { ...item, status: e.target.value as Certification["status"] })} className={inp} style={{ color: "var(--foreground)" }}>
+                  <option value="issued">Issued</option>
+                  <option value="progress">In Progress</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs" style={{ color: "var(--muted)" }}>Accent colour</span>
+                <input type="color" value={item.color} onChange={e => update(i, { ...item, color: e.target.value })} className="w-10 h-10 rounded-lg border border-[var(--border)] cursor-pointer bg-transparent" />
+                <input value={item.color} onChange={e => update(i, { ...item, color: e.target.value })} className={`${inp} flex-1`} style={{ color: "var(--foreground)" }} />
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {items.length === 0 && (
+        <p className="text-sm text-center py-8" style={{ color: "var(--muted)" }}>No certifications yet.</p>
+      )}
+    </div>
+  );
+}
+
+// ─── Profile tab ───────────────────────────────────────────────────────────────
+
+function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: Profile) => Promise<void> }) {
+  const [p, setP] = useState<Profile>(profile ?? DEFAULT_PROFILE);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { if (profile) setP(profile); }, [profile]);
+
+  const set = <K extends keyof Profile>(k: K, v: Profile[K]) => setP(prev => ({ ...prev, [k]: v }));
+
+  const doSave = async () => {
+    setSaving(true); await onSave(p);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+
+  const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
+  const lbl = "text-xs mb-1.5 block";
+
+  const Group = ({ title, children }: { title: string; children: React.ReactNode }) =>
+    card(
+      <div className="space-y-3">
+        <p className="text-sm font-semibold mb-1">{title}</p>
+        {children}
+      </div>
+    );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between sticky top-0 z-10 pb-2">
+        <p className="text-sm" style={{ color: "var(--muted)" }}>Edit the text shown across the site.</p>
+        <button onClick={doSave} disabled={saving}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer"
+          style={{ background: "var(--accent)" }}>
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saved ? "Saved!" : "Save All"}
+        </button>
+      </div>
+
+      {/* Hero */}
+      <Group title="Hero">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Name</span>
+            <input value={p.name} onChange={e => set("name", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Tagline</span>
+            <input value={p.tagline} onChange={e => set("tagline", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        </div>
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Rotating roles (comma-separated)</span>
+          <input value={p.roles.join(", ")} onChange={e => set("roles", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Achievement badge</span>
+          <input value={p.heroBadge} onChange={e => set("heroBadge", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Stat card value</span>
+            <input value={p.statValue} onChange={e => set("statValue", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Stat card label</span>
+            <input value={p.statLabel} onChange={e => set("statLabel", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Available badge text</span>
+            <input value={p.availableText} onChange={e => set("availableText", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Unavailable badge text</span>
+            <input value={p.unavailableText} onChange={e => set("unavailableText", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        </div>
+      </Group>
+
+      {/* About */}
+      <Group title="About">
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Subtitle (under name)</span>
+          <input value={p.aboutTitle} onChange={e => set("aboutTitle", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Bio paragraphs (blank line between paras). Markup: **text** = bold, ==text== = blue pill</span>
+          <textarea value={p.bio.join("\n\n")} onChange={e => set("bio", e.target.value.split(/\n\n+/).map(s => s.trim()).filter(Boolean))}
+            rows={8} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} /></div>
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Quick info lines (one per line)</span>
+          <textarea value={p.quickInfo.join("\n")} onChange={e => set("quickInfo", e.target.value.split("\n").map(s => s.trim()).filter(Boolean))}
+            rows={3} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} /></div>
+
+        <span className={lbl} style={{ color: "var(--muted)" }}>Stats (4 cards)</span>
+        {p.stats.map((s, i) => (
+          <div key={i} className="grid grid-cols-4 gap-2">
+            <input value={s.prefix} onChange={e => set("stats", p.stats.map((x, j) => j === i ? { ...x, prefix: e.target.value } : x))} placeholder="prefix" className={inp} style={{ color: "var(--foreground)" }} />
+            <input type="number" value={s.value} onChange={e => set("stats", p.stats.map((x, j) => j === i ? { ...x, value: Number(e.target.value) } : x))} placeholder="value" className={inp} style={{ color: "var(--foreground)" }} />
+            <input value={s.suffix} onChange={e => set("stats", p.stats.map((x, j) => j === i ? { ...x, suffix: e.target.value } : x))} placeholder="suffix" className={inp} style={{ color: "var(--foreground)" }} />
+            <input value={s.label} onChange={e => set("stats", p.stats.map((x, j) => j === i ? { ...x, label: e.target.value } : x))} placeholder="label" className={inp} style={{ color: "var(--foreground)" }} />
+          </div>
+        ))}
+
+        <div className="flex items-center justify-between">
+          <span className={lbl} style={{ color: "var(--muted)" }}>Education</span>
+          <button
+            onClick={() => set("education", [...asEducation(p), { degree: "", school: "", score: "", years: "" }])}
+            className="text-xs flex items-center gap-1 px-2 py-1 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+            style={{ color: "var(--muted)" }}
+          >
+            <Plus size={12} /> Add
+          </button>
+        </div>
+        {asEducation(p).map((edu, i) => (
+          <div key={i} className="rounded-lg border border-[var(--border)] p-3 space-y-2" style={{ background: "var(--surface-2)" }}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium" style={{ color: "var(--muted)" }}>#{i + 1}</span>
+              <button onClick={() => set("education", asEducation(p).filter((_, j) => j !== i))}
+                className="text-red-400 hover:text-red-500 cursor-pointer transition-colors"><Trash2 size={12} /></button>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              <input value={edu.degree} onChange={e => set("education", asEducation(p).map((x, j) => j === i ? { ...x, degree: e.target.value } : x))} placeholder="Degree" className={inp} style={{ color: "var(--foreground)" }} />
+              <input value={edu.school} onChange={e => set("education", asEducation(p).map((x, j) => j === i ? { ...x, school: e.target.value } : x))} placeholder="School" className={inp} style={{ color: "var(--foreground)" }} />
+              <input value={edu.score} onChange={e => set("education", asEducation(p).map((x, j) => j === i ? { ...x, score: e.target.value } : x))} placeholder="Score (optional)" className={inp} style={{ color: "var(--foreground)" }} />
+              <input value={edu.years} onChange={e => set("education", asEducation(p).map((x, j) => j === i ? { ...x, years: e.target.value } : x))} placeholder="Years" className={inp} style={{ color: "var(--foreground)" }} />
+            </div>
+          </div>
+        ))}
+      </Group>
+
+      {/* Contact */}
+      <Group title="Contact & Social">
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>Contact line (under heading)</span>
+          <input value={p.contactLine} onChange={e => set("contactLine", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>Email</span>
+            <input value={p.email} onChange={e => set("email", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+          <div><span className={lbl} style={{ color: "var(--muted)" }}>LinkedIn URL</span>
+            <input value={p.linkedin} onChange={e => set("linkedin", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+        </div>
+        <div><span className={lbl} style={{ color: "var(--muted)" }}>GitHub URL</span>
+          <input value={p.github} onChange={e => set("github", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
+      </Group>
     </div>
   );
 }

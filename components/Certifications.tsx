@@ -1,50 +1,24 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Clock, CheckCircle } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { slideLeft } from "@/lib/animations";
-
-const certs = [
-  {
-    title: "Microsoft Azure Fundamentals",
-    badge: "AZ-900",
-    issuer: "Microsoft",
-    date: "Aug 2025",
-    status: "issued",
-    color: "#0078D4",
-  },
-  {
-    title: "GitHub Copilot Certified",
-    badge: "GH",
-    issuer: "GitHub",
-    date: "Mar 2026",
-    status: "issued",
-    color: "#2088FF",
-  },
-  {
-    title: "Azure Administrator Associate",
-    badge: "AZ-104",
-    issuer: "Microsoft",
-    date: "In Progress",
-    status: "progress",
-    color: "#0078D4",
-  },
-  {
-    title: "UI/UX Design",
-    badge: "UX",
-    issuer: "Internshala",
-    date: "Mar 2023",
-    status: "issued",
-    color: "#FF7262",
-  },
-];
+import { DEFAULT_CERTIFICATIONS, Certification } from "@/lib/content";
 
 export default function Certifications() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
+  const [certs, setCerts] = useState<Certification[]>(DEFAULT_CERTIFICATIONS);
+
+  useEffect(() => {
+    fetch("/api/content?type=certifications")
+      .then(r => r.json())
+      .then(d => { if (Array.isArray(d.data)) setCerts(d.data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <section

@@ -26,9 +26,6 @@ git -c http.proxy="" -c https.proxy="" push "https://Samstar7550:TOKEN@github.co
 - Tokens shared in chat are compromised — treat as revoked
 
 ## Latest commit
-`8c1343a` — "feat: add photo to resume PDF, compress to 159KB"
-
-## ⚠️ Large uncommitted body of work (as of 2026-05-30)
-The entire backend/admin feature set from the 2026-05-30 session is **uncommitted** (~42 changed/new files): EmailJS→Resend migration, admin console (`app/admin`), Redis-backed CMS (`api/content`, `lib/content.ts`), leads (`api/lead`, `lib/lead.ts`, `LeadCapture.tsx`), visitor tracking (`lib/visitor.ts`), unified nightly digest, Vercel Blob uploads, password auth + OTP change, command palette, GitHub activity, cursor spotlight, error boundaries. Needs a commit + push when ready. See [[portfolio-project]] for the full feature map.
+`b0d4f77` — "feat: Resend migration, admin CMS console, analytics & lead capture" — pushed to origin/main 2026-05-30 (50 files: the entire backend/admin/CMS/leads/analytics feature set). See [[portfolio-project]] for the feature map.
 
 **Related memories:** [[portfolio-project]]
