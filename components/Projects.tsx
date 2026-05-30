@@ -70,6 +70,36 @@ function ProjectIcon({ type, color }: { type: string; color: string }) {
   return <Globe size={16} style={iconStyle} />;
 }
 
+// Live uptime indicator — pings the project's link via our /api/status proxy
+function StatusDot({ url }: { url: string }) {
+  const [s, setS] = useState<{ ok: boolean; ms: number } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/status?url=${encodeURIComponent(url)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (alive && d && typeof d.ok === "boolean") setS(d); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [url]);
+
+  const color = s == null ? "#9ca3af" : s.ok ? "#22c55e" : "#ef4444";
+  const text = s == null ? "checking" : s.ok ? "live" : "down";
+  const title = s == null ? "Checking status…" : s.ok ? `Live · ${s.ms}ms` : "Currently unreachable";
+
+  return (
+    <span className="inline-flex items-center gap-1.5" title={title}>
+      <span className="relative flex h-2 w-2">
+        {s?.ok && (
+          <span className="absolute inline-flex h-full w-full rounded-full opacity-60 animate-ping" style={{ background: color }} />
+        )}
+        <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: color }} />
+      </span>
+      <span className="text-[10px] uppercase tracking-wide" style={{ color: "var(--muted)" }}>{text}</span>
+    </span>
+  );
+}
+
 export default function Projects() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
@@ -308,7 +338,12 @@ export default function Projects() {
                           />
                         </motion.span>
                       </a>
-                    ) : !project.figma ? (
+                    ) : null}
+
+                    {/* Live status — only for projects with a public link */}
+                    {project.link && <StatusDot url={project.link} />}
+
+                    {!project.link && !project.figma ? (
                       <span
                         className="inline-flex items-center gap-2 text-xs"
                         style={{ color: "var(--muted)" }}
