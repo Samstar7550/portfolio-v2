@@ -25,8 +25,9 @@ export const metadata: Metadata = {
   keywords: ["DevOps", "Cloud Engineer", "Kubernetes", "Docker", "Azure", "TCS", "Samuvel"],
   authors: [{ name: "Samuvel L" }],
   icons: {
+    // Raster fallback for crawlers / no-JS. The live SVG favicon is injected at
+    // runtime by PaletteProvider, coloured to the selected palette.
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon.ico" },

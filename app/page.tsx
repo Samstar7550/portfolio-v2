@@ -17,6 +17,8 @@ import CursorSpotlight from "@/components/CursorSpotlight";
 import CommandPalette from "@/components/CommandPalette";
 import GitHubActivity from "@/components/GitHubActivity";
 import LeadCapture from "@/components/LeadCapture";
+import Awards from "@/components/Awards";
+import Testimonials from "@/components/Testimonials";
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false);
@@ -38,8 +40,10 @@ export default function Home() {
       <Experience />
       <Skills />
       <Certifications />
+      <Awards />
       <Projects />
       <GitHubActivity />
+      <Testimonials />
       <Contact />
       <Footer />
       <BackToTop />

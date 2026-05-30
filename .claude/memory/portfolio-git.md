@@ -26,6 +26,6 @@ git -c http.proxy="" -c https.proxy="" push "https://Samstar7550:TOKEN@github.co
 - Tokens shared in chat are compromised — treat as revoked
 
 ## Latest commit
-`b0d4f77` — "feat: Resend migration, admin CMS console, analytics & lead capture" — pushed to origin/main 2026-05-30 (50 files: the entire backend/admin/CMS/leads/analytics feature set). See [[portfolio-project]] for the feature map.
+`4dc9760` — "feat: certifications & resume in CMS, full profile editing, palette switcher, detailed change emails" — pushed to origin/main 2026-05-30. (Prev: `b0d4f77` Resend migration + admin CMS + analytics/leads.) See [[portfolio-project]] for the full feature map.
 
 **Related memories:** [[portfolio-project]]

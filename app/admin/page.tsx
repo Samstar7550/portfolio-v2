@@ -9,10 +9,10 @@ import {
   Settings, Layers, Briefcase, FolderOpen, LogOut, Plus, Trash2,
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
-  Award, FileText, UserCircle, Check,
+  Award, FileText, UserCircle, Check, Trophy, MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
-import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, Settings as SettingsType } from "@/lib/content";
+import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Settings as SettingsType } from "@/lib/content";
 import { DEFAULT_PROFILE, asEducation, PALETTES } from "@/lib/content";
 import { applyPalette } from "@/components/PaletteProvider";
 import { PDFDocument } from "pdf-lib";
@@ -127,7 +127,7 @@ function card(children: React.ReactNode, className = "") {
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications";
+type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials";
 type AuthStep = "login" | "forgot" | "done";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -138,6 +138,8 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "experience",     label: "Experience",     icon: <Briefcase size={15} /> },
   { id: "projects",       label: "Projects",       icon: <FolderOpen size={15} /> },
   { id: "certifications", label: "Certifications", icon: <Award size={15} /> },
+  { id: "awards",         label: "Awards",         icon: <Trophy size={15} /> },
+  { id: "testimonials",   label: "Testimonials",   icon: <MessageSquare size={15} /> },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -175,6 +177,8 @@ export default function AdminPage() {
   const [projects, setProjects]     = useState<Project[] | null>(null);
   const [certs, setCerts]           = useState<Certification[] | null>(null);
   const [profile, setProfile]       = useState<Profile | null>(null);
+  const [awards, setAwards]         = useState<AwardItem[] | null>(null);
+  const [testimonials, setTestimonials] = useState<Testimonial[] | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -199,6 +203,8 @@ export default function AdminPage() {
     load("projects", setProjects as (d: unknown) => void);
     load("certifications", setCerts as (d: unknown) => void);
     load("profile", setProfile as (d: unknown) => void);
+    load("awards", setAwards as (d: unknown) => void);
+    load("testimonials", setTestimonials as (d: unknown) => void);
     // load stats
     fetch("/api/stats", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => { if (!d.error) setStats(d); }).catch(() => {});
@@ -630,6 +636,20 @@ export default function AdminPage() {
               {tab === "certifications" && (
                 <CertificationsTab certs={certs} onSave={async (c) => {
                   if (await save("certifications", c)) setCerts(c);
+                }} />
+              )}
+
+              {/* ── Awards tab ── */}
+              {tab === "awards" && (
+                <AwardsTab awards={awards} onSave={async (a) => {
+                  if (await save("awards", a)) setAwards(a);
+                }} />
+              )}
+
+              {/* ── Testimonials tab ── */}
+              {tab === "testimonials" && (
+                <TestimonialsTab items={testimonials} uploadIcon={uploadIcon} onSave={async (t) => {
+                  if (await save("testimonials", t)) setTestimonials(t);
                 }} />
               )}
             </motion.div>
@@ -1528,6 +1548,152 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
         <div><span className={lbl} style={{ color: "var(--muted)" }}>GitHub URL</span>
           <input value={p.github} onChange={e => set("github", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
       </Group>
+    </div>
+  );
+}
+
+// ─── Awards tab ────────────────────────────────────────────────────────────────
+
+function AwardsTab({ awards, onSave }: { awards: AwardItem[] | null; onSave: (a: AwardItem[]) => Promise<void> }) {
+  const [items, setItems] = useState<AwardItem[]>(awards ?? []);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { if (awards) setItems(awards); }, [awards]);
+
+  const doSave = async () => {
+    setSaving(true); await onSave(items);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+  const update = (i: number, v: AwardItem) => setItems(arr => arr.map((x, j) => j === i ? v : x));
+  const remove = (i: number) => { setItems(arr => arr.filter((_, j) => j !== i)); setEditing(null); };
+  const add = () => { setItems(arr => [{ title: "", issuer: "", date: "", description: "" }, ...arr]); setEditing(0); };
+
+  const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
+          <Plus size={14} /> Add Award
+        </button>
+        <button onClick={doSave} disabled={saving}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer"
+          style={{ background: "var(--accent)" }}>
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saved ? "Saved!" : "Save All"}
+        </button>
+      </div>
+
+      {items.map((item, i) => (
+        <div key={i} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
+          <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => setEditing(editing === i ? null : i)}>
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: "color-mix(in srgb, var(--accent) 14%, transparent)" }}>
+                <Trophy size={16} style={{ color: "var(--accent)" }} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{item.title || <span style={{ color: "var(--muted)" }}>Untitled</span>}</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{item.issuer} {item.date && `· ${item.date}`}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={e => { e.stopPropagation(); remove(i); }} className="cursor-pointer hover:text-red-400 transition-colors" style={{ color: "var(--muted)" }}><Trash2 size={14} /></button>
+              {editing === i ? <ChevronUp size={14} style={{ color: "var(--muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--muted)" }} />}
+            </div>
+          </div>
+          {editing === i && (
+            <div className="px-5 pb-5 border-t border-[var(--border)] space-y-3" style={{ paddingTop: 16 }}>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input value={item.title} onChange={e => update(i, { ...item, title: e.target.value })} placeholder="Title" className={inp} style={{ color: "var(--foreground)" }} />
+                <input value={item.issuer} onChange={e => update(i, { ...item, issuer: e.target.value })} placeholder="Issuer" className={inp} style={{ color: "var(--foreground)" }} />
+              </div>
+              <input value={item.date} onChange={e => update(i, { ...item, date: e.target.value })} placeholder="Date / Year" className={inp} style={{ color: "var(--foreground)" }} />
+              <textarea value={item.description} onChange={e => update(i, { ...item, description: e.target.value })} placeholder="Description" rows={2} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} />
+            </div>
+          )}
+        </div>
+      ))}
+      {items.length === 0 && <p className="text-sm text-center py-8" style={{ color: "var(--muted)" }}>No awards yet.</p>}
+    </div>
+  );
+}
+
+// ─── Testimonials tab ──────────────────────────────────────────────────────────
+
+function TestimonialsTab({ items: initial, onSave, uploadIcon }: {
+  items: Testimonial[] | null;
+  onSave: (t: Testimonial[]) => Promise<void>;
+  uploadIcon: (f: File) => Promise<string>;
+}) {
+  const [items, setItems] = useState<Testimonial[]>(initial ?? []);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => { if (initial) setItems(initial); }, [initial]);
+
+  const doSave = async () => {
+    setSaving(true); await onSave(items);
+    setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000);
+  };
+  const update = (i: number, v: Testimonial) => setItems(arr => arr.map((x, j) => j === i ? v : x));
+  const remove = (i: number) => { setItems(arr => arr.filter((_, j) => j !== i)); setEditing(null); };
+  const add = () => { setItems(arr => [{ quote: "", author: "", role: "", company: "" }, ...arr]); setEditing(0); };
+
+  const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <button onClick={add} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
+          <Plus size={14} /> Add Testimonial
+        </button>
+        <button onClick={doSave} disabled={saving}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer"
+          style={{ background: "var(--accent)" }}>
+          {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+          {saved ? "Saved!" : "Save All"}
+        </button>
+      </div>
+
+      {items.map((item, i) => (
+        <div key={i} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
+          <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => setEditing(editing === i ? null : i)}>
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "var(--accent)" }}>
+                {(item.author || "?").split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold truncate">{item.author || <span style={{ color: "var(--muted)" }}>Anonymous</span>}</p>
+                <p className="text-xs mt-0.5 truncate" style={{ color: "var(--muted)" }}>{item.role} {item.company && `· ${item.company}`}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button onClick={e => { e.stopPropagation(); remove(i); }} className="cursor-pointer hover:text-red-400 transition-colors" style={{ color: "var(--muted)" }}><Trash2 size={14} /></button>
+              {editing === i ? <ChevronUp size={14} style={{ color: "var(--muted)" }} /> : <ChevronDown size={14} style={{ color: "var(--muted)" }} />}
+            </div>
+          </div>
+          {editing === i && (
+            <div className="px-5 pb-5 border-t border-[var(--border)] space-y-3" style={{ paddingTop: 16 }}>
+              <textarea value={item.quote} onChange={e => update(i, { ...item, quote: e.target.value })} placeholder="Quote" rows={3} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} />
+              <div className="grid sm:grid-cols-3 gap-3">
+                <input value={item.author} onChange={e => update(i, { ...item, author: e.target.value })} placeholder="Author" className={inp} style={{ color: "var(--foreground)" }} />
+                <input value={item.role} onChange={e => update(i, { ...item, role: e.target.value })} placeholder="Role" className={inp} style={{ color: "var(--foreground)" }} />
+                <input value={item.company} onChange={e => update(i, { ...item, company: e.target.value })} placeholder="Company" className={inp} style={{ color: "var(--foreground)" }} />
+              </div>
+              <div>
+                <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Avatar (optional)</p>
+                <IconUploader currentUrl={item.avatarUrl} uploadFn={uploadIcon}
+                  onUpload={url => update(i, { ...item, avatarUrl: url || undefined })} />
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+      {items.length === 0 && <p className="text-sm text-center py-8" style={{ color: "var(--muted)" }}>No testimonials yet.</p>}
     </div>
   );
 }
