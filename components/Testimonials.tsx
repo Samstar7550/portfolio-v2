@@ -1,15 +1,13 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 import { Testimonial } from "@/lib/content";
 
 export default function Testimonials() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
   const [items, setItems] = useState<Testimonial[]>([]);
   const [index, setIndex] = useState(0);
@@ -44,14 +42,14 @@ export default function Testimonials() {
       id="testimonials"
       className="py-16 sm:py-24"
       style={{ background: "var(--surface-1)" }}
-      ref={ref}
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}
           initial="hidden"
-          animate={inView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
           className="flex items-center gap-4 mb-12"
         >
           <h2 className="font-heading text-3xl sm:text-4xl font-bold">Testimonials</h2>

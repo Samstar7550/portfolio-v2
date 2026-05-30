@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Trophy, Medal, Star, Sparkles } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
@@ -10,8 +10,6 @@ import { AwardItem } from "@/lib/content";
 const ICONS = [Trophy, Medal, Star, Sparkles];
 
 export default function Awards() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
   const reduced = useReducedMotion();
   const [awards, setAwards] = useState<AwardItem[]>([]);
 
@@ -25,13 +23,14 @@ export default function Awards() {
   if (awards.length === 0) return null;
 
   return (
-    <section id="awards" className="py-16 sm:py-24" ref={ref}>
+    <section id="awards" className="py-16 sm:py-24">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
           variants={reduced ? undefined : slideLeft}
           initial="hidden"
-          animate={inView ? "visible" : "hidden"}
+          whileInView="visible"
+          viewport={{ once: true, margin: "-80px" }}
           className="flex items-center gap-4 mb-12"
         >
           <h2 className="font-heading text-3xl sm:text-4xl font-bold">Awards &amp; Recognition</h2>
