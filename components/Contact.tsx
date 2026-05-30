@@ -122,6 +122,7 @@ export default function Contact() {
   const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [bookingUrl, setBookingUrl] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/content?type=profile")
@@ -150,20 +151,29 @@ export default function Contact() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setFormState("loading");
+    setErrorMsg("");
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Request failed");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Show the server's message (e.g. the 30-min cooldown notice)
+        setErrorMsg(data?.error || "Something went wrong. Please try again.");
+        setFormState("error");
+        setTimeout(() => setFormState("idle"), 8000);
+        return;
+      }
       setFormState("success");
       setForm({ from_name: "", reply_to: "", message: "", hp_field: "" });
-      setTimeout(() => setFormState("idle"), 4000);
+      setTimeout(() => setFormState("idle"), 5000);
     } catch (err) {
       console.error("Contact error:", err);
+      setErrorMsg("Network error — please check your connection and try again.");
       setFormState("error");
-      setTimeout(() => setFormState("idle"), 4000);
+      setTimeout(() => setFormState("idle"), 8000);
     }
   };
 
@@ -331,6 +341,27 @@ export default function Contact() {
                   >
                     I&apos;ll get back to you soon!
                   </motion.p>
+                )}
+              </AnimatePresence>
+
+              {/* Error alert — shows the server message (e.g. the 30-min cooldown) */}
+              <AnimatePresence>
+                {formState === "error" && errorMsg && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    role="alert"
+                    className="flex items-start gap-2 text-xs rounded-lg px-3 py-2.5 border"
+                    style={{
+                      color: "#ef4444",
+                      borderColor: "color-mix(in srgb, #ef4444 35%, transparent)",
+                      background: "color-mix(in srgb, #ef4444 10%, transparent)",
+                    }}
+                  >
+                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                    <span>{errorMsg}</span>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </form>

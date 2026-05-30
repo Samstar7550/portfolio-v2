@@ -26,13 +26,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  // Rate limit — max 5 submissions per IP per hour
+  // Rate limit — one message per IP per 30 minutes (cooldown starts after a
+  // successful send, below, so a failed send never locks the visitor out).
+  const COOLDOWN = 1800; // seconds (30 min)
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rlKey = `portfolio:rl:contact:${ip}`;
-  const count = await redis.incr(rlKey);
-  if (count === 1) await redis.expire(rlKey, 3600);
-  if (count > 5) {
-    return NextResponse.json({ error: "Too many messages. Please try again later." }, { status: 429 });
+  const ttl = await redis.ttl(rlKey);
+  if (typeof ttl === "number" && ttl > 0) {
+    const mins = Math.ceil(ttl / 60);
+    return NextResponse.json(
+      {
+        error: `You've already sent a message. Please wait about ${mins} minute${mins === 1 ? "" : "s"} before sending another.`,
+        retryAfter: ttl,
+      },
+      { status: 429, headers: { "Retry-After": String(ttl) } }
+    );
   }
 
   const fromEmail = process.env.FROM_EMAIL ?? "Portfolio <noreply@samuvel.in>";
@@ -47,8 +55,11 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("Resend error:", error);
-    return NextResponse.json({ error: "Email failed" }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't send right now — please try again in a moment." }, { status: 500 });
   }
+
+  // Message sent — start the 30-minute cooldown for this IP
+  await redis.set(rlKey, "1", { ex: COOLDOWN });
 
   // Auto-reply to the sender (fire-and-forget — never blocks the response)
   resend.emails.send({
