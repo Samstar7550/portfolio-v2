@@ -1086,6 +1086,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
   const [resumeUrl, setResumeUrl] = useState(settings?.resumeUrl ?? "");
   const [palette, setPalette] = useState(settings?.palette ?? "default");
   const [bookingUrl, setBookingUrl] = useState(settings?.bookingUrl ?? "");
+  const [cooldownMins, setCooldownMins] = useState<number>(settings?.contactCooldownMins ?? 30);
   const [resumeUploading, setResumeUploading] = useState(false);
   const [resumeError, setResumeError] = useState("");
   const [resumeInfo, setResumeInfo] = useState("");
@@ -1109,6 +1110,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
       setResumeUrl(settings.resumeUrl ?? "");
       setPalette(settings.palette ?? "default");
       setBookingUrl(settings.bookingUrl ?? "");
+      setCooldownMins(settings.contactCooldownMins ?? 30);
     }
   }, [settings]);
 
@@ -1157,7 +1159,7 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
 
   const persist = async (patch: Partial<SettingsType>) => {
     setSaving(true);
-    const next = { available, photoUrl: photoUrl || undefined, resumeUrl: resumeUrl || undefined, palette, bookingUrl: bookingUrl || undefined, ...patch };
+    const next = { available, photoUrl: photoUrl || undefined, resumeUrl: resumeUrl || undefined, palette, bookingUrl: bookingUrl || undefined, contactCooldownMins: cooldownMins, ...patch };
     await onSave(next);
     setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -1306,6 +1308,23 @@ function SettingsTab({ settings, onSave, uploadIcon, token }: {
               className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer" style={{ background: "var(--accent)" }}>
               {saving ? <Loader2 size={13} className="animate-spin" /> : "Save"}
             </button>
+          </div>
+
+          <div className="pt-2 border-t border-[var(--border)]">
+            <p className="text-sm font-medium mb-0.5">Contact form cooldown</p>
+            <p className="text-xs mb-2" style={{ color: "var(--muted)" }}>
+              Minutes a visitor must wait between messages (per IP). Set <strong>0</strong> to disable.
+            </p>
+            <div className="flex items-center gap-2">
+              <input type="number" min={0} max={1440} value={cooldownMins}
+                onChange={e => setCooldownMins(Math.max(0, Math.min(1440, Number(e.target.value) || 0)))}
+                className="w-28 px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]" style={{ color: "var(--foreground)" }} />
+              <span className="text-sm" style={{ color: "var(--muted)" }}>minutes</span>
+              <button onClick={() => persist({ contactCooldownMins: cooldownMins })} disabled={saving}
+                className="ml-auto px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60 cursor-pointer" style={{ background: "var(--accent)" }}>
+                {saving ? <Loader2 size={13} className="animate-spin" /> : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       )}

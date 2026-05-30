@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { Redis } from "@upstash/redis";
 import { LEADS_KEY, Lead } from "@/lib/lead";
+import { CONTENT_KEYS } from "@/lib/content";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -26,21 +27,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
   }
 
-  // Rate limit — one message per IP per 30 minutes (cooldown starts after a
-  // successful send, below, so a failed send never locks the visitor out).
-  const COOLDOWN = 1800; // seconds (30 min)
+  // Rate limit — one message per IP per <cooldown> minutes. The cooldown is
+  // admin-editable (Settings.contactCooldownMins, default 30, 0 = disabled) and
+  // starts only after a successful send (below), so a failed send never locks out.
+  const sRaw = await redis.get(CONTENT_KEYS.settings);
+  const settings = typeof sRaw === "string"
+    ? (() => { try { return JSON.parse(sRaw); } catch { return null; } })()
+    : sRaw;
+  const rawMins = settings?.contactCooldownMins;
+  const cooldownMins = typeof rawMins === "number" ? Math.max(0, Math.min(1440, rawMins)) : 30;
+  const COOLDOWN = cooldownMins * 60; // seconds
+
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const rlKey = `portfolio:rl:contact:${ip}`;
-  const ttl = await redis.ttl(rlKey);
-  if (typeof ttl === "number" && ttl > 0) {
-    const mins = Math.ceil(ttl / 60);
-    return NextResponse.json(
-      {
-        error: `You've already sent a message. Please wait about ${mins} minute${mins === 1 ? "" : "s"} before sending another.`,
-        retryAfter: ttl,
-      },
-      { status: 429, headers: { "Retry-After": String(ttl) } }
-    );
+  if (COOLDOWN > 0) {
+    const ttl = await redis.ttl(rlKey);
+    if (typeof ttl === "number" && ttl > 0) {
+      const mins = Math.ceil(ttl / 60);
+      return NextResponse.json(
+        {
+          error: `You've already sent a message. Please wait about ${mins} minute${mins === 1 ? "" : "s"} before sending another.`,
+          retryAfter: ttl,
+        },
+        { status: 429, headers: { "Retry-After": String(ttl) } }
+      );
+    }
   }
 
   const fromEmail = process.env.FROM_EMAIL ?? "Portfolio <noreply@samuvel.in>";
@@ -58,8 +69,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Couldn't send right now — please try again in a moment." }, { status: 500 });
   }
 
-  // Message sent — start the 30-minute cooldown for this IP
-  await redis.set(rlKey, "1", { ex: COOLDOWN });
+  // Message sent — start the cooldown for this IP (skipped when disabled)
+  if (COOLDOWN > 0) await redis.set(rlKey, "1", { ex: COOLDOWN });
 
   // Auto-reply to the sender (fire-and-forget — never blocks the response)
   resend.emails.send({

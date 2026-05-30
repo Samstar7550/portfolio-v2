@@ -19,7 +19,7 @@ export type Certification = {
   title: string; badge: string; issuer: string;
   date: string; status: "issued" | "progress"; color: string;
 };
-export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string; bookingUrl?: string };
+export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string; bookingUrl?: string; contactCooldownMins?: number };
 
 export type ProfileStat = { prefix: string; value: number; suffix: string; label: string };
 export type EducationItem = { degree: string; school: string; score: string; years: string };
