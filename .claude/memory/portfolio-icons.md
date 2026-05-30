@@ -35,6 +35,12 @@ Used in Contact (social links), Projects (ProjectIcon function component for des
 ## Admin uploads override (added 2026-05-30)
 Skills/Experience/Projects items can carry an optional `iconUrl` (uploaded via the admin console → Vercel Blob → `/api/blob` proxy). In each component the render order is: **`iconUrl` (uploaded `<img>`) → built-in ICONS map → 2-letter fallback**. Skills now renders from the Redis-loaded `groups` state (falls back to the static `skillGroups` defaults), so the module-level wave index only covers default skills — admin-added skills get wave index `0`.
 
+## Favicon (2026-05-30)
+Moved from runtime dynamic injection to **static `app/icon.svg`** (white "SL" on dark `#080A10`, palette-neutral, hashed by Next). Do NOT add `metadata.icons` (freezes it). Details in [[portfolio-project]].
+
+## Skill proficiency bars (2026-05-30)
+`SkillGroup.level` (0-100, optional) renders an animated bar in each category header in Skills.tsx; admin SkillsTab has a per-category level input. Lightweight CSS (no Recharts on the homepage).
+
 ## Wave stagger index
 Global index computed at module level (outside component) so it doesn't re-run on renders:
 ```ts
