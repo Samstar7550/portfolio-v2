@@ -1617,7 +1617,9 @@ function CertificationsTab({ certs, onSave }: { certs: Certification[] | null; o
         <div key={i} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
           <div className="flex items-center justify-between px-5 py-4 cursor-pointer" onClick={() => setEditing(editing === i ? null : i)}>
             <div className="flex items-center gap-3">
-              <span className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+              <span className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-center font-bold px-1 leading-none break-all overflow-hidden ${
+                  (item.badge?.length ?? 0) > 5 ? "text-[8px]" : (item.badge?.length ?? 0) > 3 ? "text-[10px]" : "text-xs"
+                }`}
                 style={{ background: `color-mix(in srgb, ${item.color} 20%, transparent)`, color: item.color }}>
                 {item.badge || "—"}
               </span>
