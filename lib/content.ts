@@ -1,5 +1,5 @@
 export type Skill      = { name: string; note?: string; iconUrl?: string };
-export type SkillGroup = { category: string; skills: Skill[] };
+export type SkillGroup = { category: string; skills: Skill[]; level?: number };
 export type ExperienceItem = {
   role: string; company: string; period: string;
   type: "devops" | "design"; current: boolean;
@@ -13,6 +13,7 @@ export type Project = {
   iconUrl?: string;
   images?: string[];   // screenshots / wireframes — first is the card hero, all open in a lightbox
   figma?: string;      // optional Figma / prototype / Behance link
+  caseStudy?: string;  // optional long-form case study (markdown) shown in a modal
 };
 export type Certification = {
   title: string; badge: string; issuer: string;

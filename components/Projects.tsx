@@ -5,8 +5,12 @@ import Image from "next/image";
 import type { Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
-import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2, BookOpen } from "lucide-react";
+import dynamic from "next/dynamic";
 import { FigmaIcon } from "@/components/BrandIcons";
+
+// Loaded only when a case study is opened — keeps react-markdown off the homepage bundle
+const CaseStudyModal = dynamic(() => import("@/components/CaseStudyModal"));
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 
@@ -108,6 +112,7 @@ export default function Projects() {
   const [projectList, setProjectList] = useState<ProjectType[]>(defaultProjects);
   const [allTags, setAllTags] = useState<string[]>(ALL_DEFAULT_TAGS);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number; title: string } | null>(null);
+  const [caseStudy, setCaseStudy] = useState<{ title: string; body: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/content?type=projects")
@@ -365,6 +370,18 @@ export default function Projects() {
                         View in Figma
                       </a>
                     )}
+
+                    {project.caseStudy && (
+                      <button
+                        type="button"
+                        onClick={() => setCaseStudy({ title: project.title, body: project.caseStudy! })}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer transition-colors hover:opacity-90"
+                        style={{ color: project.color }}
+                      >
+                        <BookOpen size={12} />
+                        Read case study
+                      </button>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -390,6 +407,7 @@ export default function Projects() {
     </section>
 
     <ProjectLightbox data={lightbox} onClose={() => setLightbox(null)} reduced={reduced} />
+    <CaseStudyModal data={caseStudy} onClose={() => setCaseStudy(null)} reduced={reduced} />
     </>
   );
 }

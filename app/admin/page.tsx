@@ -1435,6 +1435,7 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
           onRemoveGroup={() => removeGroup(gi)}
           onAddSkill={(n, note) => addSkill(gi, n, note)}
           onRemoveSkill={si => removeSkill(gi, si)}
+          onSetLevel={lvl => setGroups(g => g.map((gr, i) => i === gi ? { ...gr, level: lvl } : gr))}
           onUpdateSkillIcon={(si, url) => setGroups(g => g.map((gr, i) => i === gi
             ? { ...gr, skills: gr.skills.map((s, j) => j === si ? { ...s, iconUrl: url || undefined } : s) }
             : gr))} />
@@ -1455,8 +1456,8 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
   );
 }
 
-function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onUpdateSkillIcon, uploadIcon }:
-  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string) => void; uploadIcon: (f: File) => Promise<string> }) {
+function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onUpdateSkillIcon, onSetLevel, uploadIcon }:
+  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string) => void; onSetLevel: (level: number | undefined) => void; uploadIcon: (f: File) => Promise<string> }) {
   const [open, setOpen] = useState(true);
   const [newName, setNewName] = useState(""); const [newNote, setNewNote] = useState("");
 
@@ -1472,6 +1473,15 @@ function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onU
       </div>
       {open && (
         <>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs" style={{ color: "var(--muted)" }}>Proficiency</span>
+            <input type="number" min={0} max={100} value={group.level ?? ""}
+              onChange={e => onSetLevel(e.target.value === "" ? undefined : Math.max(0, Math.min(100, Number(e.target.value))))}
+              placeholder="—"
+              className="w-20 px-2 py-1 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]"
+              style={{ color: "var(--foreground)" }} />
+            <span className="text-xs" style={{ color: "var(--muted)" }}>% — blank hides the bar</span>
+          </div>
           <div className="space-y-2 mb-3">
             {group.skills.map((s: Skill, i: number) => (
               <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
@@ -1710,6 +1720,12 @@ function ProjectForm({ item, onChange, uploadIcon }: { item: Project; onChange: 
         <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Screenshots / wireframes — first is the card hero, all open in a gallery</p>
         <MultiImageUploader urls={item.images ?? []} uploadFn={uploadIcon}
           onChange={urls => set("images", urls.length ? urls : undefined)} />
+      </div>
+      <div>
+        <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Case study (Markdown — optional; adds a &quot;Read case study&quot; button)</p>
+        <textarea value={item.caseStudy ?? ""} onChange={e => set("caseStudy", e.target.value || undefined)}
+          placeholder="## The problem&#10;…&#10;## My approach&#10;…&#10;## Outcome&#10;…"
+          rows={6} className={`${inp} resize-y font-mono text-xs`} style={{ color: "var(--foreground)" }} />
       </div>
     </div>
   );

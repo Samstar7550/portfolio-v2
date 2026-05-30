@@ -108,6 +108,7 @@ interface SkillDef {
 interface SkillGroup {
   category: string;
   skills: SkillDef[];
+  level?: number;
 }
 
 const skillGroups: SkillGroup[] = [
@@ -346,6 +347,21 @@ export default function Skills() {
                     {group.category}
                   </h3>
                   <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                  {typeof group.level === "number" && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="w-20 sm:w-28 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
+                        <motion.div
+                          className="h-full rounded-full"
+                          style={{ background: "var(--accent)" }}
+                          initial={reduced ? false : { width: 0 }}
+                          whileInView={{ width: `${Math.max(0, Math.min(100, group.level))}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
+                        />
+                      </div>
+                      <span className="text-[10px] tabular-nums" style={{ color: "var(--muted)" }}>{group.level}%</span>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                   {group.skills.map((skill) => {
