@@ -11,11 +11,13 @@ const redis = new Redis({
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
-  const { from_name, reply_to, message, company } = await request.json();
+  const { from_name, reply_to, message, hp_field } = await request.json();
 
-  // Honeypot — bots fill the hidden "company" field; humans never see it.
-  // Pretend success so the bot doesn't retry.
-  if (company) return NextResponse.json({ ok: true });
+  // Honeypot — bots fill the hidden "hp_field"; humans never see it. The field
+  // has a non-semantic name so browser autofill / password managers leave it
+  // empty (the old "company" name was being autofilled and silently dropping
+  // real messages). Pretend success so a bot doesn't retry.
+  if (hp_field) return NextResponse.json({ ok: true });
 
   if (!from_name || !reply_to || !message) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });

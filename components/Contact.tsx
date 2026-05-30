@@ -118,7 +118,7 @@ export default function Contact() {
   const reduced = useReducedMotion();
 
   const [formState, setFormState] = useState<FormState>("idle");
-  const [form, setForm] = useState({ from_name: "", reply_to: "", message: "", company: "" });
+  const [form, setForm] = useState({ from_name: "", reply_to: "", message: "", hp_field: "" });
   const [copied, setCopied] = useState(false);
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [bookingUrl, setBookingUrl] = useState("");
@@ -158,7 +158,7 @@ export default function Contact() {
       });
       if (!res.ok) throw new Error("Request failed");
       setFormState("success");
-      setForm({ from_name: "", reply_to: "", message: "", company: "" });
+      setForm({ from_name: "", reply_to: "", message: "", hp_field: "" });
       setTimeout(() => setFormState("idle"), 4000);
     } catch (err) {
       console.error("Contact error:", err);
@@ -206,11 +206,12 @@ export default function Contact() {
             className="lg:col-span-3"
           >
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Honeypot — hidden from humans, catches bots. Not announced to AT. */}
+              {/* Honeypot — non-semantic name so browsers/password managers never
+                  autofill it. Hidden from humans + AT; only bots fill it. */}
               <input
                 type="text"
-                name="company"
-                value={form.company}
+                name="hp_field"
+                value={form.hp_field}
                 onChange={handleChange}
                 tabIndex={-1}
                 autoComplete="off"
