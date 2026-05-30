@@ -30,7 +30,7 @@ const FONT = "Liberation Sans";
  * Favicon SVG — "SL" monogram, Option A (bold, tight, unified mark)
  * The negative letter-spacing fuses S and L into a single visual mark.
  */
-function faviconSVG(size, bg = DARK_BG, fg = TEAL) {
+function faviconSVG(size, bg = DARK_BG, fg = WHITE) {
   const rx = Math.max(3, Math.round(size * 0.19));
   const fontSize = Math.round(size * 0.56);
   const letterSpacing = -Math.round(size * 0.035);
@@ -60,7 +60,7 @@ function faviconSVG(size, bg = DARK_BG, fg = TEAL) {
 }
 
 /** Scalable SVG favicon — viewBox only, no fixed width/height */
-function faviconSVGScalable(bg = DARK_BG, fg = TEAL) {
+function faviconSVGScalable(bg = DARK_BG, fg = WHITE) {
   const size = 32;
   const rx = 6;
   const fontSize = 18;
@@ -229,7 +229,7 @@ async function main() {
   const sizes = [16, 32, 48, 180, 192, 512];
   const pngs = {};
   for (const s of sizes) {
-    pngs[s] = await renderPNG(s, DARK_BG, TEAL);
+    pngs[s] = await renderPNG(s, DARK_BG, WHITE);
     log(`  ✓ ${s}×${s}  favicon`);
   }
 
