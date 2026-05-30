@@ -126,6 +126,51 @@ function card(children: React.ReactNode, className = "") {
   );
 }
 
+// Aggregates recent visitor records into top-5 breakdowns with percentage bars.
+function AnalyticsBreakdown({ visitors }: { visitors: VisitorRecord[] }) {
+  const total = visitors.length;
+  const tally = (key: keyof VisitorRecord): [string, number][] => {
+    const m = new Map<string, number>();
+    for (const v of visitors) {
+      const k = String(v[key] || "Unknown");
+      m.set(k, (m.get(k) ?? 0) + 1);
+    }
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  };
+  const groups: { title: string; rows: [string, number][] }[] = [
+    { title: "Devices",   rows: tally("device") },
+    { title: "Browsers",  rows: tally("browser") },
+    { title: "Referrers", rows: tally("ref") },
+    { title: "Countries", rows: tally("country") },
+  ];
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-4">
+      {groups.map((g) => (
+        <div key={g.title} className="rounded-xl border border-[var(--border)] p-5" style={{ background: "var(--surface-1)" }}>
+          <p className="text-sm font-medium mb-3">{g.title}</p>
+          <div className="space-y-2.5">
+            {g.rows.map(([label, count]) => {
+              const pct = total ? Math.round((count / total) * 100) : 0;
+              return (
+                <div key={label}>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="truncate" style={{ color: "var(--foreground)" }}>{label}</span>
+                    <span className="shrink-0 ml-2 tabular-nums" style={{ color: "var(--muted)" }}>{count} · {pct}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--accent)" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Upload + manage a list of images (screenshots / wireframes). First image is the card hero.
 function MultiImageUploader({
   urls,
@@ -584,6 +629,14 @@ export default function AdminPage() {
                         </>
                       )}
                     </>
+                  )}
+
+                  {/* Audience breakdown */}
+                  {activity && activity.visitors.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-3">Audience — last {activity.visitors.length} visitors</p>
+                      <AnalyticsBreakdown visitors={activity.visitors} />
+                    </div>
                   )}
 
                   {/* Recent leads */}
