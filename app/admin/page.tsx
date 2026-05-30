@@ -10,6 +10,7 @@ import {
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
   Award, FileText, UserCircle, Check, Trophy, MessageSquare,
+  HardDrive, AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Settings as SettingsType } from "@/lib/content";
@@ -127,7 +128,7 @@ function card(children: React.ReactNode, className = "") {
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials";
+type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "storage";
 type AuthStep = "login" | "forgot" | "done";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -140,6 +141,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "certifications", label: "Certifications", icon: <Award size={15} /> },
   { id: "awards",         label: "Awards",         icon: <Trophy size={15} /> },
   { id: "testimonials",   label: "Testimonials",   icon: <MessageSquare size={15} /> },
+  { id: "storage",        label: "Storage",        icon: <HardDrive size={15} /> },
 ];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -191,9 +193,8 @@ export default function AdminPage() {
     }
   }, []);
 
-  // load content when authenticated
-  useEffect(() => {
-    if (!token) return;
+  // Re-fetch all content sections from Redis (used on login + after Storage edits)
+  const reloadContent = useCallback(() => {
     const load = (type: string, setter: (d: unknown) => void) =>
       fetch(`/api/content?type=${type}`)
         .then(r => r.json()).then(d => setter(d.data)).catch(() => {});
@@ -205,13 +206,19 @@ export default function AdminPage() {
     load("profile", setProfile as (d: unknown) => void);
     load("awards", setAwards as (d: unknown) => void);
     load("testimonials", setTestimonials as (d: unknown) => void);
+  }, []);
+
+  // load content when authenticated
+  useEffect(() => {
+    if (!token) return;
+    reloadContent();
     // load stats
     fetch("/api/stats", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => { if (!d.error) setStats(d); }).catch(() => {});
     // load recent leads + visitors
     fetch("/api/admin/activity", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => { if (!d.error) setActivity(d); }).catch(() => {});
-  }, [token]);
+  }, [token, reloadContent]);
 
   const uploadIcon = useCallback(async (file: File): Promise<string> => {
     const form = new FormData();
@@ -655,11 +662,178 @@ export default function AdminPage() {
                   if (await save("testimonials", t)) setTestimonials(t);
                 }} />
               )}
+
+              {/* ── Storage tab ── */}
+              {tab === "storage" && (
+                <StorageTab token={token} onChanged={reloadContent} />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </main>
+  );
+}
+
+// ─── Storage tab ──────────────────────────────────────────────────────────────
+
+type BlobFile = { url: string; pathname: string; size: number; uploadedAt: string; proxyUrl: string };
+
+const RESET_SECTIONS: { id: string; label: string }[] = [
+  { id: "profile",        label: "Profile" },
+  { id: "settings",       label: "Settings" },
+  { id: "skills",         label: "Skills" },
+  { id: "experience",     label: "Experience" },
+  { id: "projects",       label: "Projects" },
+  { id: "certifications", label: "Certifications" },
+  { id: "awards",         label: "Awards" },
+  { id: "testimonials",   label: "Testimonials" },
+];
+
+function fmtSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function isImage(pathname: string): boolean {
+  return /\.(png|jpe?g|gif|webp|svg|avif|ico)$/i.test(pathname);
+}
+
+function StorageTab({ token, onChanged }: { token: string | null; onChanged: () => void }) {
+  const [files, setFiles] = useState<BlobFile[] | null>(null);
+  const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [msg, setMsg] = useState("");
+  const [resetSection, setResetSection] = useState("settings");
+  const [resetting, setResetting] = useState(false);
+
+  const load = useCallback(() => {
+    setFiles(null); setError("");
+    fetch("/api/admin/blobs", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { if (d.error) setError(d.error); else setFiles(d.files); })
+      .catch(() => setError("Failed to load files."));
+  }, [token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const deleteFile = async (f: BlobFile) => {
+    if (!window.confirm(`Delete "${f.pathname.replace("portfolio-icons/", "")}"?\n\nThis permanently removes the file from Vercel Blob and clears any reference to it in your content.`)) return;
+    setDeleting(f.url); setMsg(""); setError("");
+    try {
+      const res = await fetch("/api/admin/blobs", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ url: f.url }),
+      });
+      const d = await res.json();
+      if (!res.ok) { setError(d.error ?? "Delete failed."); }
+      else {
+        setFiles(prev => prev ? prev.filter(x => x.url !== f.url) : prev);
+        const cleared = (d.clearedFrom ?? []) as string[];
+        setMsg(cleared.length ? `File deleted. Cleared its reference in: ${cleared.join(", ")}.` : "File deleted.");
+        if (cleared.length) onChanged();
+      }
+    } catch { setError("Network error."); }
+    setDeleting(null);
+  };
+
+  const resetSectionToDefaults = async () => {
+    const label = RESET_SECTIONS.find(s => s.id === resetSection)?.label ?? resetSection;
+    if (!window.confirm(`Reset "${label}" to built-in defaults?\n\nThis overwrites the current content in Redis and cannot be undone.`)) return;
+    setResetting(true); setMsg(""); setError("");
+    try {
+      const res = await fetch(`/api/content?type=${resetSection}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); setError(d.error ?? "Reset failed."); }
+      else { setMsg(`"${label}" reset to defaults.`); onChanged(); }
+    } catch { setError("Network error."); }
+    setResetting(false);
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Vercel Blob files */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-heading text-lg font-semibold flex items-center gap-2">
+            <HardDrive size={18} style={{ color: "var(--accent)" }} /> Uploaded files
+          </h3>
+          <button onClick={load} className="inline-flex items-center gap-1.5 text-xs hover:text-[var(--accent)] transition-colors cursor-pointer" style={{ color: "var(--muted)" }}>
+            <RefreshCw size={13} /> Refresh
+          </button>
+        </div>
+
+        {msg && <p className="text-xs mb-3" style={{ color: "var(--accent)" }}>{msg}</p>}
+        {error && <p className="text-xs mb-3 text-red-400">{error}</p>}
+
+        {files === null ? (
+          <div className="flex items-center gap-2 text-sm py-8 justify-center" style={{ color: "var(--muted)" }}>
+            <Loader2 size={16} className="animate-spin" /> Loading files…
+          </div>
+        ) : files.length === 0 ? (
+          <p className="text-sm py-8 text-center" style={{ color: "var(--muted)" }}>No files in Vercel Blob.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {files.map(f => (
+              <div key={f.url} className="rounded-lg border border-[var(--border)] overflow-hidden" style={{ background: "var(--surface-2)" }}>
+                <div className="h-28 flex items-center justify-center overflow-hidden" style={{ background: "var(--background)" }}>
+                  {isImage(f.pathname) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={f.proxyUrl} alt={f.pathname} className="w-full h-full object-contain" />
+                  ) : (
+                    <FileText size={32} style={{ color: "var(--muted)" }} />
+                  )}
+                </div>
+                <div className="p-3">
+                  <p className="text-xs font-medium truncate" title={f.pathname}>{f.pathname.replace("portfolio-icons/", "")}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "var(--muted)" }}>{fmtSize(f.size)} · {new Date(f.uploadedAt).toLocaleDateString()}</p>
+                  <button
+                    onClick={() => deleteFile(f)}
+                    disabled={deleting === f.url}
+                    className="mt-2 w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {deleting === f.url ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Reset content section */}
+      <div className="rounded-lg border border-[var(--border)] p-4" style={{ background: "var(--surface-2)" }}>
+        <h3 className="font-heading text-sm font-semibold flex items-center gap-2 mb-1">
+          <AlertTriangle size={15} className="text-amber-500" /> Reset a content section
+        </h3>
+        <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
+          Overwrites the chosen section in Redis with its built-in defaults. Useful for clearing out test data.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={resetSection}
+            onChange={e => setResetSection(e.target.value)}
+            className="px-3 py-2 rounded-md text-sm border border-[var(--border)] bg-[var(--background)] cursor-pointer"
+            style={{ color: "var(--foreground)" }}
+          >
+            {RESET_SECTIONS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+          <button
+            onClick={resetSectionToDefaults}
+            disabled={resetting}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {resetting ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+            Reset to defaults
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

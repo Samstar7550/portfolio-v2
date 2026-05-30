@@ -142,3 +142,24 @@ export async function PUT(req: NextRequest) {
   sendChangeNotification(type, prev, body); // async, non-blocking
   return NextResponse.json({ ok: true });
 }
+
+// Reset a content section back to its built-in defaults
+export async function DELETE(req: NextRequest) {
+  const type = req.nextUrl.searchParams.get("type") as ContentType | null;
+  if (!type || !(type in CONTENT_KEYS)) {
+    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+  }
+  if (!(await verifySession(req))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const prevRaw = await redis.get(CONTENT_KEYS[type]);
+  const prev = typeof prevRaw === "string"
+    ? (() => { try { return JSON.parse(prevRaw); } catch { return prevRaw; } })()
+    : prevRaw;
+
+  const defaults = DEFAULTS[type];
+  await redis.set(CONTENT_KEYS[type], JSON.stringify(defaults));
+  sendChangeNotification(type, prev, defaults); // async, non-blocking
+  return NextResponse.json({ ok: true, data: defaults });
+}
