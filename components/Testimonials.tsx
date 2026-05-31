@@ -70,9 +70,8 @@ export default function Testimonials() {
     } catch { setFormStatus("error"); setFormError("Network error — please try again."); }
   };
 
-  if (items.length === 0) return null;
-  const t = items[Math.min(index, items.length - 1)];
-  const initials = t.author.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  const t = items.length > 0 ? items[Math.min(index, items.length - 1)] : null;
+  const initials = t ? t.author.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() : "";
 
   return (
     <section
@@ -93,6 +92,7 @@ export default function Testimonials() {
           <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
         </motion.div>
 
+        {t && (
         <div
           className="relative"
           onMouseEnter={() => setPaused(true)}
@@ -184,6 +184,7 @@ export default function Testimonials() {
             </div>
           )}
         </div>
+        )}
 
         {/* Share feedback prompt */}
         <div className="mt-10 text-center">
