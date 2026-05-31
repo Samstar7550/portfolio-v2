@@ -117,11 +117,26 @@ function IconUploader({
   );
 }
 
-// ─── Icon search (simple-icons) ───────────────────────────────────────────────
+// ─── Icon search (simple-icons + Iconify logos/devicon) ──────────────────────
 
-type IconHit = { title: string; slug: string; hex: string; svg: string };
+type IconHit =
+  | { source: "simple-icons"; title: string; slug: string; hex: string; svg: string }
+  | { source: "iconify";      title: string; slug: string; cdnUrl: string };
 
-function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void }) {
+function hitPreviewUrl(icon: IconHit): string {
+  if (icon.source === "iconify") return icon.cdnUrl;
+  // Use encodeURIComponent — btoa() breaks on non-Latin1 chars in some SVGs
+  const coloured = icon.svg.replace(/<svg /, `<svg fill="#${icon.hex}" `);
+  return `data:image/svg+xml,${encodeURIComponent(coloured)}`;
+}
+
+function hitIconUrl(icon: IconHit): string {
+  // What gets stored in iconUrl
+  if (icon.source === "iconify") return icon.cdnUrl;
+  return hitPreviewUrl(icon);
+}
+
+function IconSearchButton({ onSelect }: { onSelect: (url: string) => void }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<IconHit[]>([]);
@@ -144,10 +159,7 @@ function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void })
   };
 
   const pick = (icon: IconHit) => {
-    // Colour the SVG with the brand hex, then store as data URL
-    const coloured = icon.svg.replace(/<svg /, `<svg fill="#${icon.hex}" `);
-    const dataUrl = `data:image/svg+xml;base64,${btoa(coloured)}`;
-    onSelect(dataUrl);
+    onSelect(hitIconUrl(icon));
     setOpen(false); setQ(""); setHits([]);
   };
 
@@ -164,7 +176,7 @@ function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void })
 
       {open && (
         <div
-          className="absolute left-0 top-8 z-50 w-72 rounded-xl border border-[var(--border)] p-3 shadow-xl"
+          className="absolute left-0 top-8 z-50 w-80 rounded-xl border border-[var(--border)] p-3 shadow-xl"
           style={{ background: "var(--background)" }}
         >
           <div className="relative mb-2">
@@ -173,7 +185,7 @@ function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void })
               autoFocus
               value={q}
               onChange={e => search(e.target.value)}
-              placeholder="e.g. Docker, Kubernetes…"
+              placeholder="e.g. Java, Azure, Python…"
               className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface-1)] outline-none focus:border-[var(--accent)]"
               style={{ color: "var(--foreground)" }}
             />
@@ -189,20 +201,24 @@ function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void })
             <div className="grid grid-cols-4 gap-1.5">
               {hits.map(icon => (
                 <button
-                  key={icon.slug}
+                  key={`${icon.source}-${icon.slug}`}
                   type="button"
                   onClick={() => pick(icon)}
-                  title={icon.title}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer"
+                  title={`${icon.title} (${icon.source})`}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer group"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={`data:image/svg+xml;base64,${btoa(icon.svg.replace(/<svg /, `<svg fill="#${icon.hex}" `))}`}
+                    src={hitPreviewUrl(icon)}
                     alt={icon.title}
                     className="w-6 h-6 object-contain"
+                    onError={e => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
                   />
                   <span className="text-[9px] truncate w-full text-center leading-tight" style={{ color: "var(--muted)" }}>
                     {icon.title}
+                  </span>
+                  <span className="text-[8px] leading-tight opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: "var(--muted)" }}>
+                    {icon.source === "iconify" ? "iconify" : "si"}
                   </span>
                 </button>
               ))}
