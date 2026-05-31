@@ -96,4 +96,32 @@ Navbar · Hero · About · Experience · Skills · Certifications · **Awards** 
 - **Fonts:** added Dancing Script (`--font-signature`) — handwritten "Samuvel" logo replaced the "SL" square in Navbar + Footer.
 - Cert badge boxes are fixed-size with length-scaled font (long codes don't break layout) — both public component and admin list.
 
+**Session 2026-05-31 additions:**
+
+**Feedback system:**
+- `app/api/feedback/route.ts` — POST (public, honeypot + 1/IP/24h rate-limit, stores in `portfolio:feedback` sorted set), GET (admin-gated, newest-first), DELETE (admin-gated, by id).
+- `components/Testimonials.tsx` — "Share Feedback" button at bottom of section (always visible even when carousel is empty). Modal: name*, quote*, role/company optional, hp_field honeypot. Success/error states.
+- Admin **Feedback tab** — shows pending submissions with "Add to Testimonials" (one-click promote + auto-dismiss) and "Dismiss". Tab label shows badge count.
+
+**Icon search + per-item colour:**
+- `app/api/icon-search/route.ts` — GET `?q=` searches simple-icons (local, 3000+) + Iconify `logos`/`devicon` sets (external fetch, 1h cache) in parallel. Returns up to 12 merged, deduped hits: `{source, title, slug, hex, svg}` (simple-icons) or `{source, title, slug, cdnUrl}` (iconify).
+- Admin `IconSearchButton` — live search dropdown (300ms debounce, click-outside closes), 4-col icon grid. simple-icons hits stored as `data:image/svg+xml,${encodeURIComponent(coloured_svg)}` (NOT btoa — btoa breaks on non-Latin1). Iconify hits stored as CDN URL directly.
+- `Skill.iconColor?: string` — brand hex (with #) stored alongside `iconUrl` when picked from simple-icons search. Per-skill colour swatch (`<label><input sr-only type="color"/><div/></label>`) in admin allows manual override. `SkillBadge` uses `iconColor` → ICONS map → null (neutral container for Iconify/upload).
+- `AwardItem.color?: string`, `ExperienceItem.color?: string` — added colour pickers in admin AwardsTab + ExperienceForm (same swatch+hex pattern as Projects/Certifications). Public Awards.tsx and Experience.tsx use `c = item.color ?? "var(--accent)"` throughout (glow, dot, border, tags, etc.).
+- `Certification.iconUrl?: string` — icon search/upload in admin CertificationsTab edit panel.
+- `AwardItem.iconUrl?: string` — icon search/upload in admin AwardsTab edit panel.
+
+**Bug fix:** `CountUp` in `About.tsx` changed `useInView` margin from `"-80px"` to `"0px"` — percentage stat card was stuck at 0 on mobile because the viewport is too short for the -80px threshold.
+
+**Blog upgrades:**
+- Reading time: `Math.max(1, Math.ceil(words/200))` shown on index cards and post header.
+- Tag filter: pill nav above post list on `/blog` page, server-side via `?tag=` searchParam.
+- Social share: `components/ShareButtons.tsx` (client) — LinkedIn, X/Twitter, copy-link (clipboard API + 2s "Copied!" state). Rendered at bottom of every blog post.
+- Dynamic OG image: `app/blog/[slug]/opengraph-image.tsx` using `ImageResponse` — dark bg, accent glow blobs, tags, title, excerpt, SL monogram, site URL. Auto-served by Next.js at the route `/blog/[slug]/opengraph-image`.
+- Tags on post page are now `<Link href="/blog?tag=...">` so clicking a tag filters the list.
+
+**New content fields:**
+- `Project.videoUrl?: string` — "Watch demo" button (PlayCircle icon) in Projects.tsx links row. Admin input in ProjectForm after figma field.
+- `Certification.verifyUrl?: string` — "Verify" link (ExternalLink icon, cert color) shown on issued certs in Certifications.tsx. Admin input in CertificationsTab edit form.
+
 **Related memories:** [[portfolio-animations]] [[portfolio-icons]] [[portfolio-git]] [[upstash-json-gotcha]]

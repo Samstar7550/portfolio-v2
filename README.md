@@ -66,9 +66,13 @@ A DevOps/Cloud engineer who also designs and builds full-stack — so the site i
 ### Public site
 - **Hero** with animated typewriter roles, availability badge, and a floating stat card.
 - **About** with bio, quick facts, education, animated stats, and a "currently learning" pill.
-- **Experience** timeline, **Skills** grid with optional per-category **proficiency bars**, **Certifications**, **Awards & Recognition**, **Testimonials** carousel.
-- **Projects** as a light "work hub" — filter by Web / DevOps / Design, **image galleries with a fullscreen lightbox**, **live up/down + latency status badges** on deployed links, optional **"View in Figma"** and **case-study modal** (markdown).
-- **Blog** (`/blog`) — server-rendered, markdown posts with tags, cover images, RSS, and per-post SEO.
+- **Experience** timeline with **per-entry accent colour**, **Skills** grid with per-skill **brand colour swatch** and optional per-category **proficiency bars**.
+- **Certifications** with per-cert **icon** (uploaded or searched) and a **"Verify" link** (Credly / Microsoft Learn) shown on issued certs.
+- **Awards & Recognition** with per-award **icon + accent colour**.
+- **Testimonials** carousel + **"Share Feedback" modal** (honeypot-guarded, 24 h rate-limited; submissions land in the admin Feedback inbox).
+- **Projects** — filter by Web / DevOps / Design, **image galleries with a fullscreen lightbox**, **live up/down + latency status badges**, optional **"View in Figma"**, **"Watch demo" video link**, and **case-study modal** (markdown).
+- **Blog** (`/blog`) — server-rendered, markdown posts with **reading time**, **tag filter**, cover images, RSS, and per-post SEO + **dynamic OG image** (auto-generated 1200×630 card for social sharing).
+- **Social share buttons** (LinkedIn, X/Twitter, copy-link) at the bottom of every blog post.
 - **GitHub activity feed**, **lead-capture widget**, **contact form** (+ optional "Book a call").
 - **Command palette** (`⌘K`/`Ctrl+K`), cursor spotlight, scroll progress, back-to-top, loading screen.
 - **10-palette accent switcher** (light/dark pairs), dark/light theme, handwritten signature logo.
@@ -80,17 +84,21 @@ A DevOps/Cloud engineer who also designs and builds full-stack — so the site i
 - **Settings** — Open-to-Work toggle, profile photo, resume (client-side PDF compression), palette picker, booking link.
 - **Storage** — list Vercel Blob files; delete a file **and auto-strip its Redis references**; reset any section to defaults.
 - **Analytics** — 30-day visitor chart + audience breakdowns (device / browser / referrer / country); recent leads & visitors.
+- **Feedback inbox** — review visitor feedback submissions; one-click **"Add to Testimonials"** or dismiss. Badge counter shows pending count.
+- **Icon search** — search 3000+ icons from **simple-icons** + **Iconify** (`logos` / `devicon` sets) per skill, cert, award, or experience item. Stores as self-contained SVG data URL or CDN URL. Per-item **colour swatch** controls the badge glow / border tint.
 - **Change notifications** — every save emails the admin a diff of what changed.
 
 ### Backend / automation
 - **Visitor analytics** — total + per-day counts, IP geo, UA parsing, referrer; 30-day retention.
 - **Lead capture** — contact + widget submissions stored as leads.
 - **Contact hardening** — honeypot, per-IP rate limit (5/hr), email validation, branded auto-reply to the sender.
+- **Feedback submissions** — `/api/feedback` (POST public, rate-limited 1/IP/24 h; GET + DELETE admin-gated). Stored in a Redis sorted set.
 - **Nightly digest** — one Vercel Cron email (18:00 UTC) with analytics + new leads + new visitors.
 - **Live status checks** — `/api/status` pings project links (SSRF-guarded, 5-min cached).
 
 ### SEO & performance
 - `metadataBase`, Open Graph / Twitter cards, **JSON-LD `Person`** structured data.
+- **Dynamic OG image** per blog post (`app/blog/[slug]/opengraph-image.tsx`) — title, tags, excerpt, SL monogram, accent glow; served automatically by Next.js.
 - `app/sitemap.ts` (includes published posts), `app/robots.ts` (disallow `/admin`, `/api`), `/rss.xml`.
 - **Cache-busting favicon** via `app/icon.svg` (content-hashed); palette-neutral design.
 - **Code-splitting** — markdown rendering is loaded only when a case study/post is opened, keeping it off the homepage bundle.
@@ -132,6 +140,18 @@ All routes are Next.js Route Handlers under `app/api/`. Admin routes require `Au
 | `DELETE` | `/api/content?type=<key>` | admin | Reset a section to its built-in defaults |
 
 `type` ∈ `settings · profile · skills · experience · projects · certifications · awards · testimonials · blog`
+
+### Feedback
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `POST` | `/api/feedback` | public | Submit visitor feedback (honeypot, 1/IP/24 h rate-limit) |
+| `GET` | `/api/feedback` | admin | List all pending feedback submissions (newest first) |
+| `DELETE` | `/api/feedback` | admin | Dismiss one submission by `id` |
+
+### Icon search
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `GET` | `/api/icon-search?q=<term>` | public | Search simple-icons + Iconify (logos/devicon) — returns up to 12 hits with SVG/CDN URL |
 
 ### Admin / auth
 | Method | Route | Description |
@@ -224,12 +244,19 @@ portfolio-v2/
 │   ├── apple-icon.png
 │   ├── sitemap.ts · robots.ts # SEO
 │   ├── rss.xml/route.ts       # blog RSS feed
-│   ├── admin/page.tsx         # admin console (auth + editors + storage + analytics)
-│   ├── blog/                  # /blog list + /blog/[slug] (server-rendered)
+│   ├── admin/page.tsx         # admin console (auth + all editors + storage + analytics + feedback)
+│   ├── blog/
+│   │   ├── page.tsx           # /blog — list with reading time + tag filter
+│   │   └── [slug]/
+│   │       ├── page.tsx       # /blog/[slug] — post + reading time + share buttons
+│   │       └── opengraph-image.tsx  # dynamic OG card per post
 │   ├── stats/page.tsx
-│   └── api/                   # content, admin/*, blob, contact, lead, status,
-│                              #   views, stats, github, cron/digest
-├── components/                # Hero, Navbar, Skills, Projects, Blog, CaseStudyModal…
+│   └── api/                   # content, admin/*, blob, contact, lead, feedback,
+│                              #   icon-search, status, views, stats, github, cron/digest
+├── components/
+│   ├── ShareButtons.tsx       # LinkedIn / X / copy-link (client component)
+│   ├── Testimonials.tsx       # carousel + Share Feedback modal
+│   └── …Hero, Navbar, Skills, Projects, CaseStudyModal, etc.
 ├── lib/
 │   ├── content.ts             # typed content model + defaults + palettes
 │   ├── redis-content.ts       # server-side Redis read (blog SSR)

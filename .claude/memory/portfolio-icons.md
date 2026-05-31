@@ -32,6 +32,24 @@ Inline SVG components: `LinkedInIcon`, `GitHubIcon`, `FigmaIcon`
 Accept `{ size?: number, className?: string, style?: React.CSSProperties }`  
 Used in Contact (social links), Projects (ProjectIcon function component for design type)
 
+## Icon search (added 2026-05-31)
+`app/api/icon-search/route.ts` — GET `?q=term`:
+- **simple-icons** (local): title/slug match ranked 1-4, returns `{source:"simple-icons", title, slug, hex, svg}`.
+- **Iconify** (external fetch, `logos`+`devicon` prefix, 1h cache): returns `{source:"iconify", title, slug, cdnUrl}`.
+- Results merged, deduped by normalised title, up to 12.
+
+Admin `IconSearchButton` component:
+- 300ms debounced fetch, 4-col grid preview, click-outside closes.
+- simple-icons: stored as `data:image/svg+xml,${encodeURIComponent(svg_with_fill)}` — **NOT btoa** (breaks on non-Latin1).
+- Iconify: stored as CDN URL directly (`https://api.iconify.design/{prefix}:{name}.svg`).
+- For skills only: also passes `#hex` as `color` arg → stored in `Skill.iconColor`.
+
+## Per-item colour (added 2026-05-31)
+- **Skills**: `Skill.iconColor?: string` (hex with #). `SkillBadge` priority: `iconColor` → ICONS map → null. null = neutral container (`var(--surface-2)`/`var(--border)`). Per-skill colour swatch in admin uses `<label>` wrapping `<input type="color" className="sr-only">` — the only reliable cross-browser approach.
+- **Awards**: `AwardItem.color?: string`. Public Awards.tsx uses `c = award.color ?? "var(--accent)"`.
+- **Experience**: `ExperienceItem.color?: string`. Public Experience.tsx uses `c = item.color ?? "var(--accent)"`. Hover border/shadow applied via `onMouseEnter/Leave` (Tailwind can't interpolate runtime values).
+- Projects + Certifications already had `color` fields.
+
 ## Admin uploads override (added 2026-05-30)
 Skills/Experience/Projects items can carry an optional `iconUrl` (uploaded via the admin console → Vercel Blob → `/api/blob` proxy). In each component the render order is: **`iconUrl` (uploaded `<img>`) → built-in ICONS map → 2-letter fallback**. Skills now renders from the Redis-loaded `groups` state (falls back to the static `skillGroups` defaults), so the module-level wave index only covers default skills — admin-added skills get wave index `0`.
 
