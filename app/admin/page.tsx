@@ -1744,18 +1744,18 @@ function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onU
                   {s.name}{s.note ? ` · ${s.note}` : ""}
                 </span>
                 {/* Colour swatch — sets the glow/border colour for the public skill badge */}
-                <div className="relative group/swatch shrink-0" title="Brand colour for glow & border">
+                <label className="shrink-0 cursor-pointer" title="Set brand colour for glow & border">
                   <input
                     type="color"
                     value={s.iconColor ?? "#888888"}
                     onChange={e => onUpdateSkillColor(i, e.target.value)}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    className="sr-only"
                   />
                   <div
-                    className="w-5 h-5 rounded-full border-2 border-[var(--border)] group-hover/swatch:scale-110 transition-transform"
+                    className="w-5 h-5 rounded-full border-2 border-[var(--border)] hover:scale-110 transition-transform"
                     style={{ background: s.iconColor ?? "var(--border)" }}
                   />
-                </div>
+                </label>
                 <IconUploader currentUrl={s.iconUrl} uploadFn={uploadIcon}
                   onUpload={url => onUpdateSkillIcon(i, url)} />
                 <IconSearchButton onSelect={(url, color) => onUpdateSkillIcon(i, url, color)} />
