@@ -14,11 +14,12 @@ export type Project = {
   images?: string[];   // screenshots / wireframes — first is the card hero, all open in a lightbox
   figma?: string;      // optional Figma / prototype / Behance link
   caseStudy?: string;  // optional long-form case study (markdown) shown in a modal
+  videoUrl?: string;   // optional demo video link (YouTube, Loom, etc.)
 };
 export type Certification = {
   title: string; badge: string; issuer: string;
   date: string; status: "issued" | "progress"; color: string;
-  iconUrl?: string;
+  iconUrl?: string; verifyUrl?: string;
 };
 export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string; bookingUrl?: string; contactCooldownMins?: number };
 

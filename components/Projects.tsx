@@ -5,7 +5,7 @@ import Image from "next/image";
 import type { Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
-import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2, BookOpen } from "lucide-react";
+import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2, BookOpen, PlayCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import { FigmaIcon } from "@/components/BrandIcons";
 
@@ -368,6 +368,19 @@ export default function Projects() {
                       >
                         <FigmaIcon size={12} />
                         View in Figma
+                      </a>
+                    )}
+
+                    {project.videoUrl && (
+                      <a
+                        href={project.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-xs font-medium transition-colors hover:opacity-90"
+                        style={{ color: project.color }}
+                      >
+                        <PlayCircle size={12} />
+                        Watch demo
                       </a>
                     )}
 

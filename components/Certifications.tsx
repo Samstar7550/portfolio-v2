@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Clock, CheckCircle } from "lucide-react";
+import { Clock, CheckCircle, ExternalLink } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { slideLeft } from "@/lib/animations";
 import { DEFAULT_CERTIFICATIONS, Certification } from "@/lib/content";
@@ -104,20 +104,33 @@ export default function Certifications() {
                   {cert.issuer}
                 </p>
 
-                <div className="flex items-center gap-2">
-                  {cert.status === "issued" ? (
-                    <CheckCircle size={12} style={{ color: "#22c55e" }} />
-                  ) : (
-                    <Clock size={12} style={{ color: "#f59e0b" }} />
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {cert.status === "issued" ? (
+                      <CheckCircle size={12} style={{ color: "#22c55e" }} />
+                    ) : (
+                      <Clock size={12} style={{ color: "#f59e0b" }} />
+                    )}
+                    <span
+                      className="text-xs font-medium"
+                      style={{ color: cert.status === "issued" ? "#22c55e" : "#f59e0b" }}
+                    >
+                      {cert.date}
+                    </span>
+                  </div>
+                  {cert.verifyUrl && cert.status === "issued" && (
+                    <a
+                      href={cert.verifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium transition-opacity hover:opacity-80"
+                      style={{ color: cert.color }}
+                    >
+                      <ExternalLink size={10} />
+                      Verify
+                    </a>
                   )}
-                  <span
-                    className="text-xs font-medium"
-                    style={{
-                      color: cert.status === "issued" ? "#22c55e" : "#f59e0b",
-                    }}
-                  >
-                    {cert.date}
-                  </span>
                 </div>
               </div>
             </motion.div>

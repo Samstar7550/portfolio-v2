@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarDays } from "lucide-react";
+import { ArrowLeft, CalendarDays, Clock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getContent } from "@/lib/redis-content";
 import type { Post } from "@/lib/content";
+import ShareButtons from "@/components/ShareButtons";
 
 export const revalidate = 60;
 
+function readingTime(body: string): number {
+  return Math.max(1, Math.ceil(body.trim().split(/\s+/).length / 200));
+}
+
 async function getPost(slug: string): Promise<Post | null> {
   const all = await getContent<Post[]>("blog");
-  const post = (Array.isArray(all) ? all : []).find((p) => p.slug === slug && p.published);
+  const post = (Array.isArray(all) ? all : []).find(p => p.slug === slug && p.published);
   return post ?? null;
 }
 
@@ -26,6 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: post.title,
       description: post.excerpt,
       type: "article",
+      // opengraph-image.tsx handles the generated card; cover used as fallback
       images: post.cover ? [{ url: post.cover }] : undefined,
     },
   };
@@ -53,11 +59,22 @@ export default async function BlogPost({ params }: { params: { slug: string } })
           <ArrowLeft size={14} /> All posts
         </Link>
 
-        <div className="flex items-center gap-2 text-xs mb-3" style={{ color: "var(--muted)" }}>
+        <div className="flex items-center gap-2 text-xs mb-3 flex-wrap" style={{ color: "var(--muted)" }}>
           <CalendarDays size={13} />
           {fmtDate(post.date)}
-          {post.tags?.map((t) => (
-            <span key={t} className="px-2 py-0.5 rounded-full" style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}>{t}</span>
+          <span className="flex items-center gap-1">
+            <Clock size={12} />
+            {readingTime(post.body)} min read
+          </span>
+          {post.tags?.map(t => (
+            <Link
+              key={t}
+              href={`/blog?tag=${encodeURIComponent(t)}`}
+              className="px-2 py-0.5 rounded-full transition-opacity hover:opacity-80"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
+            >
+              {t}
+            </Link>
           ))}
         </div>
 
@@ -66,6 +83,8 @@ export default async function BlogPost({ params }: { params: { slug: string } })
         <div className="blog-prose">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
         </div>
+
+        <ShareButtons slug={post.slug} title={post.title} />
       </article>
     </main>
   );

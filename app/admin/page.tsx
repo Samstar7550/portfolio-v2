@@ -1990,6 +1990,7 @@ function ProjectForm({ item, onChange, uploadIcon }: { item: Project; onChange: 
         <input value={item.linkLabel ?? ""} onChange={e => set("linkLabel", e.target.value || null)} placeholder="Link label (optional)" className={inp} style={{ color: "var(--foreground)" }} />
       </div>
       <input value={item.figma ?? ""} onChange={e => set("figma", e.target.value || undefined)} placeholder="Figma / prototype link (optional)" className={inp} style={{ color: "var(--foreground)" }} />
+      <input value={item.videoUrl ?? ""} onChange={e => set("videoUrl", e.target.value || undefined)} placeholder="Demo video URL — YouTube, Loom… (optional)" className={inp} style={{ color: "var(--foreground)" }} />
       <div>
         <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Screenshots / wireframes — first is the card hero, all open in a gallery</p>
         <MultiImageUploader urls={item.images ?? []} uploadFn={uploadIcon}
@@ -2085,6 +2086,7 @@ function CertificationsTab({ certs, onSave, uploadIcon }: { certs: Certification
                   <option value="progress">In Progress</option>
                 </select>
               </div>
+              <input value={item.verifyUrl ?? ""} onChange={e => update(i, { ...item, verifyUrl: e.target.value || undefined })} placeholder="Verification URL — Credly, Microsoft Learn… (optional)" className={inp} style={{ color: "var(--foreground)" }} />
               <div className="flex items-center gap-2">
                 <span className="text-xs" style={{ color: "var(--muted)" }}>Accent colour</span>
                 <input type="color" value={item.color} onChange={e => update(i, { ...item, color: e.target.value })} className="w-10 h-10 rounded-lg border border-[var(--border)] cursor-pointer bg-transparent" />
