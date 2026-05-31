@@ -10,7 +10,7 @@ import {
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
   Award, FileText, UserCircle, Check, Trophy, MessageSquare,
-  HardDrive, AlertTriangle, Newspaper, Inbox,
+  HardDrive, AlertTriangle, Newspaper, Inbox, Search,
 } from "lucide-react";
 import Link from "next/link";
 import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Post, Settings as SettingsType, FeedbackEntry } from "@/lib/content";
@@ -113,6 +113,112 @@ function IconUploader({
       )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden"
         onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+    </div>
+  );
+}
+
+// ─── Icon search (simple-icons) ───────────────────────────────────────────────
+
+type IconHit = { title: string; slug: string; hex: string; svg: string };
+
+function IconSearchButton({ onSelect }: { onSelect: (dataUrl: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const [hits, setHits] = useState<IconHit[]>([]);
+  const [busy, setBusy] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const search = (val: string) => {
+    setQ(val);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (val.trim().length < 2) { setHits([]); return; }
+    timerRef.current = setTimeout(async () => {
+      setBusy(true);
+      try {
+        const res = await fetch(`/api/icon-search?q=${encodeURIComponent(val.trim())}`);
+        const data = await res.json();
+        setHits(data.icons ?? []);
+      } catch { setHits([]); }
+      setBusy(false);
+    }, 300);
+  };
+
+  const pick = (icon: IconHit) => {
+    // Colour the SVG with the brand hex, then store as data URL
+    const coloured = icon.svg.replace(/<svg /, `<svg fill="#${icon.hex}" `);
+    const dataUrl = `data:image/svg+xml;base64,${btoa(coloured)}`;
+    onSelect(dataUrl);
+    setOpen(false); setQ(""); setHits([]);
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-[var(--border)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+        style={{ color: "var(--muted)" }}
+      >
+        <Search size={11} /> Search icon
+      </button>
+
+      {open && (
+        <div
+          className="absolute left-0 top-8 z-50 w-72 rounded-xl border border-[var(--border)] p-3 shadow-xl"
+          style={{ background: "var(--background)" }}
+        >
+          <div className="relative mb-2">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--muted)" }} />
+            <input
+              autoFocus
+              value={q}
+              onChange={e => search(e.target.value)}
+              placeholder="e.g. Docker, Kubernetes…"
+              className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface-1)] outline-none focus:border-[var(--accent)]"
+              style={{ color: "var(--foreground)" }}
+            />
+          </div>
+
+          {busy && <p className="text-xs text-center py-2" style={{ color: "var(--muted)" }}>Searching…</p>}
+
+          {!busy && hits.length === 0 && q.length >= 2 && (
+            <p className="text-xs text-center py-2" style={{ color: "var(--muted)" }}>No results for &ldquo;{q}&rdquo;</p>
+          )}
+
+          {hits.length > 0 && (
+            <div className="grid grid-cols-4 gap-1.5">
+              {hits.map(icon => (
+                <button
+                  key={icon.slug}
+                  type="button"
+                  onClick={() => pick(icon)}
+                  title={icon.title}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-[var(--surface-1)] transition-colors cursor-pointer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`data:image/svg+xml;base64,${btoa(icon.svg.replace(/<svg /, `<svg fill="#${icon.hex}" `))}`}
+                    alt={icon.title}
+                    className="w-6 h-6 object-contain"
+                  />
+                  <span className="text-[9px] truncate w-full text-center leading-tight" style={{ color: "var(--muted)" }}>
+                    {icon.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => { setOpen(false); setQ(""); setHits([]); }}
+            className="mt-2 w-full text-xs text-center cursor-pointer hover:text-[var(--accent)] transition-colors"
+            style={{ color: "var(--muted)" }}
+          >
+            Close
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -775,14 +881,14 @@ export default function AdminPage() {
 
               {/* ── Certifications tab ── */}
               {tab === "certifications" && (
-                <CertificationsTab certs={certs} onSave={async (c) => {
+                <CertificationsTab certs={certs} uploadIcon={uploadIcon} onSave={async (c) => {
                   if (await save("certifications", c)) setCerts(c);
                 }} />
               )}
 
               {/* ── Awards tab ── */}
               {tab === "awards" && (
-                <AwardsTab awards={awards} onSave={async (a) => {
+                <AwardsTab awards={awards} uploadIcon={uploadIcon} onSave={async (a) => {
                   if (await save("awards", a)) setAwards(a);
                 }} />
               )}
@@ -1605,6 +1711,7 @@ function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onU
                 </span>
                 <IconUploader currentUrl={s.iconUrl} uploadFn={uploadIcon}
                   onUpload={url => onUpdateSkillIcon(i, url)} />
+                <IconSearchButton onSelect={url => onUpdateSkillIcon(i, url)} />
                 <button onClick={() => onRemoveSkill(i)} className="cursor-pointer hover:text-red-400 transition-colors ml-1"><Trash2 size={12} style={{ color: "var(--muted)" }} /></button>
               </div>
             ))}
@@ -1848,7 +1955,7 @@ function ProjectForm({ item, onChange, uploadIcon }: { item: Project; onChange: 
 
 // ─── Certifications tab ────────────────────────────────────────────────────────
 
-function CertificationsTab({ certs, onSave }: { certs: Certification[] | null; onSave: (c: Certification[]) => Promise<void> }) {
+function CertificationsTab({ certs, onSave, uploadIcon }: { certs: Certification[] | null; onSave: (c: Certification[]) => Promise<void>; uploadIcon: (f: File) => Promise<string> }) {
   const [items, setItems] = useState<Certification[]>(certs ?? []);
   const [editing, setEditing] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
@@ -1930,6 +2037,14 @@ function CertificationsTab({ certs, onSave }: { certs: Certification[] | null; o
                 <span className="text-xs" style={{ color: "var(--muted)" }}>Accent colour</span>
                 <input type="color" value={item.color} onChange={e => update(i, { ...item, color: e.target.value })} className="w-10 h-10 rounded-lg border border-[var(--border)] cursor-pointer bg-transparent" />
                 <input value={item.color} onChange={e => update(i, { ...item, color: e.target.value })} className={`${inp} flex-1`} style={{ color: "var(--foreground)" }} />
+              </div>
+              <div>
+                <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Icon (overrides badge text when set)</p>
+                <div className="flex items-center gap-2">
+                  <IconUploader currentUrl={item.iconUrl} uploadFn={uploadIcon}
+                    onUpload={url => update(i, { ...item, iconUrl: url || undefined })} />
+                  <IconSearchButton onSelect={url => update(i, { ...item, iconUrl: url })} />
+                </div>
               </div>
             </div>
           )}
@@ -2079,7 +2194,7 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
 
 // ─── Awards tab ────────────────────────────────────────────────────────────────
 
-function AwardsTab({ awards, onSave }: { awards: AwardItem[] | null; onSave: (a: AwardItem[]) => Promise<void> }) {
+function AwardsTab({ awards, onSave, uploadIcon }: { awards: AwardItem[] | null; onSave: (a: AwardItem[]) => Promise<void>; uploadIcon: (f: File) => Promise<string> }) {
   const [items, setItems] = useState<AwardItem[]>(awards ?? []);
   const [editing, setEditing] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
@@ -2137,6 +2252,14 @@ function AwardsTab({ awards, onSave }: { awards: AwardItem[] | null; onSave: (a:
               </div>
               <input value={item.date} onChange={e => update(i, { ...item, date: e.target.value })} placeholder="Date / Year" className={inp} style={{ color: "var(--foreground)" }} />
               <textarea value={item.description} onChange={e => update(i, { ...item, description: e.target.value })} placeholder="Description" rows={2} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} />
+              <div>
+                <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Icon (overrides initials when set)</p>
+                <div className="flex items-center gap-2">
+                  <IconUploader currentUrl={item.iconUrl} uploadFn={uploadIcon}
+                    onUpload={url => update(i, { ...item, iconUrl: url || undefined })} />
+                  <IconSearchButton onSelect={url => update(i, { ...item, iconUrl: url })} />
+                </div>
+              </div>
             </div>
           )}
         </div>

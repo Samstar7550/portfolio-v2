@@ -18,6 +18,7 @@ export type Project = {
 export type Certification = {
   title: string; badge: string; issuer: string;
   date: string; status: "issued" | "progress"; color: string;
+  iconUrl?: string;
 };
 export type Settings = { available: boolean; photoUrl?: string; resumeUrl?: string; palette?: string; bookingUrl?: string; contactCooldownMins?: number };
 
@@ -79,6 +80,7 @@ export function paletteCss(p: Palette): string {
 
 export type AwardItem = {
   title: string; issuer: string; date: string; description: string;
+  iconUrl?: string;
 };
 export type Testimonial = {
   quote: string; author: string; role: string; company: string; avatarUrl?: string;

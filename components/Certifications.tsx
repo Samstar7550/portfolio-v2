@@ -74,12 +74,12 @@ export default function Certifications() {
               />
 
               <div className="relative">
-                {/* Badge — fixed 48×48 box; text scales/wraps so long codes don't blow out the margin */}
+                {/* Badge / icon — fixed 48×48 box */}
                 <div
                   className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center text-center font-bold font-heading mb-4 px-1 leading-none break-all overflow-hidden ${
-                    (cert.badge?.length ?? 0) > 5
+                    !cert.iconUrl && (cert.badge?.length ?? 0) > 5
                       ? "text-[9px]"
-                      : (cert.badge?.length ?? 0) > 3
+                      : !cert.iconUrl && (cert.badge?.length ?? 0) > 3
                       ? "text-xs"
                       : "text-sm"
                   }`}
@@ -89,7 +89,12 @@ export default function Certifications() {
                     border: `1px solid color-mix(in srgb, ${cert.color} 30%, transparent)`,
                   }}
                 >
-                  {cert.badge}
+                  {cert.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cert.iconUrl} alt={cert.title} className="w-8 h-8 object-contain" />
+                  ) : (
+                    cert.badge
+                  )}
                 </div>
 
                 <h3 className="font-heading font-semibold text-sm mb-1 leading-snug">

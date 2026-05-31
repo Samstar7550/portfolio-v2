@@ -7,7 +7,11 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
 import { AwardItem } from "@/lib/content";
 
-const ICONS = [Trophy, Medal, Star, Sparkles];
+const FALLBACK_ICONS = [Trophy, Medal, Star, Sparkles];
+
+function initials(title: string): string {
+  return title.split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+}
 
 export default function Awards() {
   const reduced = useReducedMotion();
@@ -39,7 +43,7 @@ export default function Awards() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {awards.map((award, i) => {
-            const Icon = ICONS[i % ICONS.length];
+            const FallbackIcon = FALLBACK_ICONS[i % FALLBACK_ICONS.length];
             return (
               <motion.div
                 key={award.title + i}
@@ -57,18 +61,27 @@ export default function Awards() {
                   style={{ background: "var(--accent)" }}
                 />
 
-                {/* Trophy badge with shine */}
+                {/* Icon badge with shine */}
                 <div className="relative mb-5">
                   <motion.div
                     animate={reduced ? {} : { y: [0, -4, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-                    className="w-14 h-14 rounded-xl flex items-center justify-center"
+                    className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden"
                     style={{
                       background: "color-mix(in srgb, var(--accent) 14%, transparent)",
                       border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
                     }}
                   >
-                    <Icon size={26} style={{ color: "var(--accent)" }} aria-hidden />
+                    {award.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={award.iconUrl} alt={award.title} className="w-7 h-7 object-contain" />
+                    ) : award.title ? (
+                      <span className="text-lg font-bold font-heading" style={{ color: "var(--accent)" }}>
+                        {initials(award.title)}
+                      </span>
+                    ) : (
+                      <FallbackIcon size={26} style={{ color: "var(--accent)" }} aria-hidden />
+                    )}
                   </motion.div>
                   {/* sweeping shine on hover */}
                   <span className="absolute inset-0 -translate-x-full group-hover:translate-x-[200%] skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 pointer-events-none" />
