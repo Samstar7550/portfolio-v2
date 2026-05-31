@@ -142,6 +142,19 @@ function IconSearchButton({ onSelect }: { onSelect: (url: string, color?: string
   const [hits, setHits] = useState<IconHit[]>([]);
   const [busy, setBusy] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false); setQ(""); setHits([]);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
 
   const search = (val: string) => {
     setQ(val);
@@ -167,7 +180,7 @@ function IconSearchButton({ onSelect }: { onSelect: (url: string, color?: string
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -228,14 +241,9 @@ function IconSearchButton({ onSelect }: { onSelect: (url: string, color?: string
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={() => { setOpen(false); setQ(""); setHits([]); }}
-            className="mt-2 w-full text-xs text-center cursor-pointer hover:text-[var(--accent)] transition-colors"
-            style={{ color: "var(--muted)" }}
-          >
-            Close
-          </button>
+          <p className="mt-2 text-[10px] text-center" style={{ color: "var(--border)" }}>
+            Click outside to close
+          </p>
         </div>
       )}
     </div>
@@ -1680,6 +1688,11 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
             ? { ...gr, skills: gr.skills.map((s, j) => j === si
                 ? { ...s, iconUrl: url || undefined, iconColor: color || undefined }
                 : s) }
+            : gr))}
+          onUpdateSkillColor={(si, color) => setGroups(g => g.map((gr, i) => i === gi
+            ? { ...gr, skills: gr.skills.map((s, j) => j === si
+                ? { ...s, iconColor: color || undefined }
+                : s) }
             : gr))} />
       ))}
 
@@ -1698,8 +1711,8 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
   );
 }
 
-function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onUpdateSkillIcon, onSetLevel, uploadIcon }:
-  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string, color?: string) => void; onSetLevel: (level: number | undefined) => void; uploadIcon: (f: File) => Promise<string> }) {
+function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onUpdateSkillIcon, onUpdateSkillColor, onSetLevel, uploadIcon }:
+  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string, color?: string) => void; onUpdateSkillColor: (i: number, color: string | undefined) => void; onSetLevel: (level: number | undefined) => void; uploadIcon: (f: File) => Promise<string> }) {
   const [open, setOpen] = useState(true);
   const [newName, setNewName] = useState(""); const [newNote, setNewNote] = useState("");
 
@@ -1730,6 +1743,19 @@ function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onU
                 <span className="flex-1 text-xs" style={{ color: "var(--foreground)" }}>
                   {s.name}{s.note ? ` · ${s.note}` : ""}
                 </span>
+                {/* Colour swatch — sets the glow/border colour for the public skill badge */}
+                <div className="relative group/swatch shrink-0" title="Brand colour for glow & border">
+                  <input
+                    type="color"
+                    value={s.iconColor ?? "#888888"}
+                    onChange={e => onUpdateSkillColor(i, e.target.value)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div
+                    className="w-5 h-5 rounded-full border-2 border-[var(--border)] group-hover/swatch:scale-110 transition-transform"
+                    style={{ background: s.iconColor ?? "var(--border)" }}
+                  />
+                </div>
                 <IconUploader currentUrl={s.iconUrl} uploadFn={uploadIcon}
                   onUpload={url => onUpdateSkillIcon(i, url)} />
                 <IconSearchButton onSelect={(url, color) => onUpdateSkillIcon(i, url, color)} />
