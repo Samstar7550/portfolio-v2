@@ -1,4 +1,4 @@
-export type Skill      = { name: string; note?: string; iconUrl?: string };
+export type Skill      = { name: string; note?: string; iconUrl?: string; iconColor?: string };
 export type SkillGroup = { category: string; skills: Skill[]; level?: number };
 export type ExperienceItem = {
   role: string; company: string; period: string;

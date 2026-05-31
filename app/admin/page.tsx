@@ -136,7 +136,7 @@ function hitIconUrl(icon: IconHit): string {
   return hitPreviewUrl(icon);
 }
 
-function IconSearchButton({ onSelect }: { onSelect: (url: string) => void }) {
+function IconSearchButton({ onSelect }: { onSelect: (url: string, color?: string) => void }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<IconHit[]>([]);
@@ -159,7 +159,10 @@ function IconSearchButton({ onSelect }: { onSelect: (url: string) => void }) {
   };
 
   const pick = (icon: IconHit) => {
-    onSelect(hitIconUrl(icon));
+    // Pass the brand hex for simple-icons so the skill container uses the brand colour.
+    // Iconify logos are multi-colour — no single hex, so no colour is passed (neutral container).
+    const color = icon.source === "simple-icons" ? `#${icon.hex}` : undefined;
+    onSelect(hitIconUrl(icon), color);
     setOpen(false); setQ(""); setHits([]);
   };
 
@@ -1673,8 +1676,10 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
           onAddSkill={(n, note) => addSkill(gi, n, note)}
           onRemoveSkill={si => removeSkill(gi, si)}
           onSetLevel={lvl => setGroups(g => g.map((gr, i) => i === gi ? { ...gr, level: lvl } : gr))}
-          onUpdateSkillIcon={(si, url) => setGroups(g => g.map((gr, i) => i === gi
-            ? { ...gr, skills: gr.skills.map((s, j) => j === si ? { ...s, iconUrl: url || undefined } : s) }
+          onUpdateSkillIcon={(si, url, color) => setGroups(g => g.map((gr, i) => i === gi
+            ? { ...gr, skills: gr.skills.map((s, j) => j === si
+                ? { ...s, iconUrl: url || undefined, iconColor: color || undefined }
+                : s) }
             : gr))} />
       ))}
 
@@ -1694,7 +1699,7 @@ function SkillsTab({ skills, onSave, uploadIcon }: { skills: SkillGroup[] | null
 }
 
 function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onUpdateSkillIcon, onSetLevel, uploadIcon }:
-  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string) => void; onSetLevel: (level: number | undefined) => void; uploadIcon: (f: File) => Promise<string> }) {
+  { group: SkillGroup; onRemoveGroup: () => void; onAddSkill: (name: string, note: string) => void; onRemoveSkill: (i: number) => void; onUpdateSkillIcon: (i: number, url: string, color?: string) => void; onSetLevel: (level: number | undefined) => void; uploadIcon: (f: File) => Promise<string> }) {
   const [open, setOpen] = useState(true);
   const [newName, setNewName] = useState(""); const [newNote, setNewNote] = useState("");
 
@@ -1727,7 +1732,7 @@ function SkillGroupEditor({ group, onRemoveGroup, onAddSkill, onRemoveSkill, onU
                 </span>
                 <IconUploader currentUrl={s.iconUrl} uploadFn={uploadIcon}
                   onUpload={url => onUpdateSkillIcon(i, url)} />
-                <IconSearchButton onSelect={url => onUpdateSkillIcon(i, url)} />
+                <IconSearchButton onSelect={(url, color) => onUpdateSkillIcon(i, url, color)} />
                 <button onClick={() => onRemoveSkill(i)} className="cursor-pointer hover:text-red-400 transition-colors ml-1"><Trash2 size={12} style={{ color: "var(--muted)" }} /></button>
               </div>
             ))}

@@ -103,6 +103,7 @@ interface SkillDef {
   name: string;
   note?: string;
   iconUrl?: string;
+  iconColor?: string; // hex with #, set when icon is picked from simple-icons search
 }
 
 interface SkillGroup {
@@ -214,12 +215,18 @@ function SkillBadge({
   reduced: boolean;
 }) {
   const iconData = ICONS[skill.name];
-  const color =
-    iconData?.kind === "svg"
-      ? `#${iconData.hex}`
-      : iconData?.kind === "img"
-      ? iconData.color
-      : "var(--accent)";
+
+  // Brand colour used for the container tint, border glow, and hover effect.
+  // Priority: stored iconColor (from simple-icons search) → built-in ICONS map
+  // → null (Iconify / uploaded file — multi-colour logos, container stays neutral)
+  const brandColor: string | null =
+    skill.iconColor ??
+    (iconData?.kind === "svg" ? `#${iconData.hex}` :
+     iconData?.kind === "img" ? iconData.color :
+     null);
+
+  // Fallback for the 2-letter text and hover glow when no brand colour is known
+  const color = brandColor ?? "var(--accent)";
 
   return (
     <motion.div
@@ -259,8 +266,12 @@ function SkillBadge({
         data-icon-wrap
         className="w-11 h-11 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center"
         style={{
-          background: `color-mix(in srgb, ${color} 14%, transparent)`,
-          border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
+          background: brandColor
+            ? `color-mix(in srgb, ${brandColor} 14%, transparent)`
+            : "var(--surface-2)",
+          border: brandColor
+            ? `1px solid color-mix(in srgb, ${brandColor} 25%, transparent)`
+            : "1px solid var(--border)",
           transition: "transform 250ms ease, box-shadow 250ms ease",
         }}
       >
