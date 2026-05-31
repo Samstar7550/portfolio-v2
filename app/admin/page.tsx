@@ -10,10 +10,10 @@ import {
   Save, X, ChevronDown, ChevronUp, ToggleLeft, ToggleRight, ImagePlus,
   Lock, KeyRound, MapPin, Monitor, UserPlus, ExternalLink,
   Award, FileText, UserCircle, Check, Trophy, MessageSquare,
-  HardDrive, AlertTriangle, Newspaper,
+  HardDrive, AlertTriangle, Newspaper, Inbox,
 } from "lucide-react";
 import Link from "next/link";
-import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Post, Settings as SettingsType } from "@/lib/content";
+import type { Skill, SkillGroup, ExperienceItem, Project, Certification, Profile, AwardItem, Testimonial, Post, Settings as SettingsType, FeedbackEntry } from "@/lib/content";
 import { DEFAULT_PROFILE, asEducation, PALETTES } from "@/lib/content";
 import { applyPalette } from "@/components/PaletteProvider";
 import { PDFDocument } from "pdf-lib";
@@ -238,7 +238,7 @@ function MultiImageUploader({
 
 // ─── Tab types ───────────────────────────────────────────────────────────────
 
-type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "blog" | "storage";
+type Tab = "overview" | "profile" | "settings" | "skills" | "experience" | "projects" | "certifications" | "awards" | "testimonials" | "feedback" | "blog" | "storage";
 type AuthStep = "login" | "forgot" | "done";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -251,6 +251,7 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "certifications", label: "Certifications", icon: <Award size={15} /> },
   { id: "awards",         label: "Awards",         icon: <Trophy size={15} /> },
   { id: "testimonials",   label: "Testimonials",   icon: <MessageSquare size={15} /> },
+  { id: "feedback",       label: "Feedback",       icon: <Inbox size={15} /> },
   { id: "blog",           label: "Blog",           icon: <Newspaper size={15} /> },
   { id: "storage",        label: "Storage",        icon: <HardDrive size={15} /> },
 ];
@@ -292,6 +293,7 @@ export default function AdminPage() {
   const [profile, setProfile]       = useState<Profile | null>(null);
   const [awards, setAwards]         = useState<AwardItem[] | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[] | null>(null);
+  const [feedback, setFeedback]     = useState<FeedbackEntry[] | null>(null);
   const [blog, setBlog]             = useState<Post[] | null>(null);
 
   useEffect(() => {
@@ -331,6 +333,9 @@ export default function AdminPage() {
     // load recent leads + visitors
     fetch("/api/admin/activity", { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(d => { if (!d.error) setActivity(d); }).catch(() => {});
+    // load visitor feedback submissions
+    fetch("/api/feedback", { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => { if (d.entries) setFeedback(d.entries); }).catch(() => {});
   }, [token, reloadContent]);
 
   const uploadIcon = useCallback(async (file: File): Promise<string> => {
@@ -581,6 +586,11 @@ export default function AdminPage() {
                         background: "transparent",
                       }}>
                       {t.icon} {t.label}
+                      {t.id === "feedback" && (feedback?.length ?? 0) > 0 && (
+                        <span className="min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center leading-none" style={{ background: "var(--accent)" }}>
+                          {feedback!.length}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -782,6 +792,39 @@ export default function AdminPage() {
                 <TestimonialsTab items={testimonials} uploadIcon={uploadIcon} onSave={async (t) => {
                   if (await save("testimonials", t)) setTestimonials(t);
                 }} />
+              )}
+
+              {/* ── Feedback tab ── */}
+              {tab === "feedback" && (
+                <FeedbackTab
+                  entries={feedback}
+                  onDismiss={async (id) => {
+                    await fetch("/api/feedback", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ id }),
+                    });
+                    setFeedback(prev => prev ? prev.filter(e => e.id !== id) : null);
+                  }}
+                  onAddToTestimonials={async (entry) => {
+                    const newItem: Testimonial = {
+                      quote: entry.quote,
+                      author: entry.name,
+                      role: entry.role ?? "",
+                      company: entry.company ?? "",
+                    };
+                    const updated = [...(testimonials ?? []), newItem];
+                    if (await save("testimonials", updated)) {
+                      setTestimonials(updated);
+                      await fetch("/api/feedback", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ id: entry.id }),
+                      });
+                      setFeedback(prev => prev ? prev.filter(e => e.id !== entry.id) : null);
+                    }
+                  }}
+                />
               )}
 
               {/* ── Blog tab ── */}
@@ -2176,6 +2219,90 @@ function TestimonialsTab({ items: initial, onSave, uploadIcon }: {
         </div>
       ))}
       {items.length === 0 && <p className="text-sm text-center py-8" style={{ color: "var(--muted)" }}>No testimonials yet.</p>}
+    </div>
+  );
+}
+
+// ─── Feedback tab ──────────────────────────────────────────────────────────────
+
+function FeedbackTab({ entries, onDismiss, onAddToTestimonials }: {
+  entries: FeedbackEntry[] | null;
+  onDismiss: (id: string) => Promise<void>;
+  onAddToTestimonials: (entry: FeedbackEntry) => Promise<void>;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const handle = async (action: () => Promise<void>, id: string) => {
+    setBusy(id); await action(); setBusy(null);
+  };
+
+  if (!entries) {
+    return <div className="text-sm text-center py-12" style={{ color: "var(--muted)" }}>Loading…</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm" style={{ color: "var(--muted)" }}>
+          {entries.length === 0 ? "No pending feedback." : `${entries.length} submission${entries.length === 1 ? "" : "s"} awaiting review`}
+        </p>
+      </div>
+
+      {entries.map((entry) => (
+        <div key={entry.id} className="rounded-xl border border-[var(--border)]" style={{ background: "var(--surface-1)" }}>
+          <div className="p-5">
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-bold text-white" style={{ background: "var(--accent)" }}>
+                  {entry.name.split(" ").map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{entry.name}</p>
+                  <p className="text-xs truncate" style={{ color: "var(--muted)" }}>
+                    {[entry.role, entry.company].filter(Boolean).join(" · ") || "No role / company"}
+                  </p>
+                </div>
+              </div>
+              <span className="text-xs shrink-0 tabular-nums" style={{ color: "var(--muted)" }}>
+                {relTime(entry.ts)}
+              </span>
+            </div>
+
+            <blockquote className="text-sm leading-relaxed mb-4 pl-3 border-l-2" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
+              &ldquo;{entry.quote}&rdquo;
+            </blockquote>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handle(() => onAddToTestimonials(entry), entry.id + "-add")}
+                disabled={busy !== null}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50 cursor-pointer"
+                style={{ background: "var(--accent)" }}
+              >
+                {busy === entry.id + "-add" ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} />}
+                Add to Testimonials
+              </button>
+              <button
+                onClick={() => handle(() => onDismiss(entry.id), entry.id + "-del")}
+                disabled={busy !== null}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs border border-[var(--border)] hover:border-red-400 hover:text-red-400 transition-colors disabled:opacity-50 cursor-pointer"
+                style={{ color: "var(--muted)" }}
+              >
+                {busy === entry.id + "-del" ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {entries.length === 0 && (
+        <div className="rounded-xl border border-dashed border-[var(--border)] py-16 text-center">
+          <Inbox size={28} className="mx-auto mb-3" style={{ color: "var(--border)" }} />
+          <p className="text-sm" style={{ color: "var(--muted)" }}>No feedback submissions yet.</p>
+          <p className="text-xs mt-1" style={{ color: "var(--border)" }}>Visitors can share feedback from the Testimonials section.</p>
+        </div>
+      )}
     </div>
   );
 }

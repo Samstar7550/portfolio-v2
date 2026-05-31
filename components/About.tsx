@@ -44,7 +44,7 @@ function CountUp({
   target, prefix = "", suffix = "", duration = 1200,
 }: { target: number; prefix?: string; suffix?: string; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const inView = useInView(ref, { once: true, margin: "0px" });
   const reduced = useReducedMotion();
   const [count, setCount] = useState(0);
 

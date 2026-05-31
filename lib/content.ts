@@ -93,6 +93,16 @@ export type Post = {
   cover?: string;      // optional cover image (blob proxy URL)
 };
 
+export type FeedbackEntry = {
+  id: string;
+  name: string;
+  role?: string;
+  company?: string;
+  quote: string;
+  ts: number;
+};
+export const FEEDBACK_KEY = "portfolio:feedback";
+
 export type ContentType =
   | "settings" | "profile" | "skills" | "experience" | "projects"
   | "certifications" | "awards" | "testimonials" | "blog";
