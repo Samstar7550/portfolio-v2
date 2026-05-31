@@ -4,7 +4,7 @@ export type ExperienceItem = {
   role: string; company: string; period: string;
   type: "devops" | "design"; current: boolean;
   bullets: string[]; tags: string[];
-  iconUrl?: string;
+  iconUrl?: string; color?: string;
 };
 export type Project = {
   title: string; period: string; description: string;
@@ -80,7 +80,7 @@ export function paletteCss(p: Palette): string {
 
 export type AwardItem = {
   title: string; issuer: string; date: string; description: string;
-  iconUrl?: string;
+  iconUrl?: string; color?: string;
 };
 export type Testimonial = {
   quote: string; author: string; role: string; company: string; avatarUrl?: string;

@@ -1878,6 +1878,11 @@ function ExperienceForm({ item, onChange, uploadIcon }: { item: ExperienceItem; 
         <input value={item.tags.join(", ")} onChange={e => set("tags", e.target.value.split(",").map(t => t.trim()).filter(Boolean))}
           placeholder="Kubernetes, Docker, Azure" className={inp} style={{ color: "var(--foreground)" }} />
       </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs" style={{ color: "var(--muted)" }}>Accent colour</span>
+        <input type="color" value={item.color ?? "#00C8D7"} onChange={e => set("color", e.target.value)} className="w-10 h-10 rounded-lg border border-[var(--border)] cursor-pointer bg-transparent" />
+        <input value={item.color ?? ""} onChange={e => set("color", e.target.value || undefined)} placeholder="var(--accent)" className={`${inp} flex-1`} style={{ color: "var(--foreground)" }} />
+      </div>
     </div>
   );
 }
@@ -2255,7 +2260,7 @@ function AwardsTab({ awards, onSave, uploadIcon }: { awards: AwardItem[] | null;
   };
   const update = (i: number, v: AwardItem) => setItems(arr => arr.map((x, j) => j === i ? v : x));
   const remove = (i: number) => { setItems(arr => arr.filter((_, j) => j !== i)); setEditing(null); };
-  const add = () => { setItems(arr => [{ title: "", issuer: "", date: "", description: "" }, ...arr]); setEditing(0); };
+  const add = () => { setItems(arr => [{ title: "", issuer: "", date: "", description: "", iconUrl: undefined, color: undefined }, ...arr]); setEditing(0); };
 
   const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
 
@@ -2299,6 +2304,11 @@ function AwardsTab({ awards, onSave, uploadIcon }: { awards: AwardItem[] | null;
               </div>
               <input value={item.date} onChange={e => update(i, { ...item, date: e.target.value })} placeholder="Date / Year" className={inp} style={{ color: "var(--foreground)" }} />
               <textarea value={item.description} onChange={e => update(i, { ...item, description: e.target.value })} placeholder="Description" rows={2} className={`${inp} resize-none`} style={{ color: "var(--foreground)" }} />
+              <div className="flex items-center gap-2">
+                <span className="text-xs" style={{ color: "var(--muted)" }}>Accent colour</span>
+                <input type="color" value={item.color ?? "#00C8D7"} onChange={e => update(i, { ...item, color: e.target.value })} className="w-10 h-10 rounded-lg border border-[var(--border)] cursor-pointer bg-transparent" />
+                <input value={item.color ?? ""} onChange={e => update(i, { ...item, color: e.target.value || undefined })} placeholder="var(--accent)" className={`${inp} flex-1`} style={{ color: "var(--foreground)" }} />
+              </div>
               <div>
                 <p className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>Icon (overrides initials when set)</p>
                 <div className="flex items-center gap-2">

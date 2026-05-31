@@ -130,8 +130,8 @@ export default function Experience() {
 
             <div className="space-y-8">
               {items.map((item, i) => {
-                // Alternate left/right slide
                 const slideVariant = i % 2 === 0 ? slideLeft : slideRight;
+                const c = item.color ?? "var(--accent)";
 
                 return (
                   <motion.div
@@ -142,12 +142,13 @@ export default function Experience() {
                     {/* Timeline dot with pulse on current role */}
                     <div className="absolute left-2.5 md:left-6 top-5 z-10">
                       <div
-                        className="w-3 h-3 rounded-full border-2 border-[var(--accent)]"
-                        style={{ background: "var(--background)" }}
+                        className="w-3 h-3 rounded-full border-2"
+                        style={{ borderColor: c, background: "var(--background)" }}
                       />
                       {item.current && !reduced && (
                         <motion.div
-                          className="absolute inset-0 rounded-full border-2 border-[var(--accent)]"
+                          className="absolute inset-0 rounded-full border-2"
+                          style={{ borderColor: c }}
                           animate={{ scale: [1, 1.8, 1], opacity: [0.7, 0, 0.7] }}
                           transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
                         />
@@ -157,8 +158,16 @@ export default function Experience() {
                     {/* Card — left border grows 2 px → 4 px on hover */}
                     <motion.div
                       whileHover={reduced ? {} : { x: 4 }}
-                      style={{ boxShadow: "inset 2px 0 0 var(--border)" }}
-                      className="group/card rounded-xl p-5 sm:p-6 border border-[var(--border)] bg-[var(--background)] transition-all hover:border-[var(--accent)] hover:shadow-lg hover:[box-shadow:inset_4px_0_0_var(--accent)]"
+                      style={{ boxShadow: `inset 2px 0 0 var(--border)` }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = `inset 4px 0 0 ${c}`;
+                        (e.currentTarget as HTMLElement).style.borderColor = c;
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = "inset 2px 0 0 var(--border)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "";
+                      }}
+                      className="group/card rounded-xl p-5 sm:p-6 border border-[var(--border)] bg-[var(--background)] transition-all hover:shadow-lg"
                     >
                       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                         <div>
@@ -167,15 +176,15 @@ export default function Experience() {
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={item.iconUrl} alt="" width={14} height={14} style={{ objectFit: "contain", borderRadius: 2 }} />
                             ) : item.type === "devops" ? (
-                              <Briefcase size={14} style={{ color: "var(--accent)" }} />
+                              <Briefcase size={14} style={{ color: c }} />
                             ) : (
-                              <Palette size={14} style={{ color: "var(--accent)" }} />
+                              <Palette size={14} style={{ color: c }} />
                             )}
                             <h3 className="font-heading font-semibold text-base sm:text-lg">
                               {item.role}
                             </h3>
                           </div>
-                          <p className="text-sm font-medium" style={{ color: "var(--accent)" }}>
+                          <p className="text-sm font-medium" style={{ color: c }}>
                             {item.company}
                           </p>
                         </div>
@@ -196,7 +205,7 @@ export default function Experience() {
                           >
                             <span
                               className="mt-2 w-1 h-1 rounded-full shrink-0"
-                              style={{ background: "var(--accent)" }}
+                              style={{ background: c }}
                             />
                             {b}
                           </li>
@@ -209,8 +218,8 @@ export default function Experience() {
                             key={tag}
                             className="text-xs px-2.5 py-0.5 rounded-full font-medium"
                             style={{
-                              background: "color-mix(in srgb, var(--accent) 12%, transparent)",
-                              color: "var(--accent)",
+                              background: `color-mix(in srgb, ${c} 12%, transparent)`,
+                              color: c,
                             }}
                           >
                             {tag}

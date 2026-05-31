@@ -44,6 +44,7 @@ export default function Awards() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {awards.map((award, i) => {
             const FallbackIcon = FALLBACK_ICONS[i % FALLBACK_ICONS.length];
+            const c = award.color ?? "var(--accent)";
             return (
               <motion.div
                 key={award.title + i}
@@ -52,13 +53,14 @@ export default function Awards() {
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.55, ease: EASE_OUT_EXPO, delay: i * 0.1 }}
                 whileHover={reduced ? {} : { y: -6 }}
-                className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-6 transition-colors hover:border-[var(--accent)] cursor-default"
+                className="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-6 transition-colors cursor-default"
+                style={{ ["--card-c" as string]: c }}
               >
                 {/* Decorative gradient glow */}
                 <div
                   aria-hidden
                   className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-[0.12] group-hover:opacity-30 transition-opacity pointer-events-none"
-                  style={{ background: "var(--accent)" }}
+                  style={{ background: c }}
                 />
 
                 {/* Icon badge with shine */}
@@ -68,19 +70,19 @@ export default function Awards() {
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
                     className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden"
                     style={{
-                      background: "color-mix(in srgb, var(--accent) 14%, transparent)",
-                      border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
+                      background: `color-mix(in srgb, ${c} 14%, transparent)`,
+                      border: `1px solid color-mix(in srgb, ${c} 30%, transparent)`,
                     }}
                   >
                     {award.iconUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={award.iconUrl} alt={award.title} className="w-7 h-7 object-contain" />
                     ) : award.title ? (
-                      <span className="text-lg font-bold font-heading" style={{ color: "var(--accent)" }}>
+                      <span className="text-lg font-bold font-heading" style={{ color: c }}>
                         {initials(award.title)}
                       </span>
                     ) : (
-                      <FallbackIcon size={26} style={{ color: "var(--accent)" }} aria-hidden />
+                      <FallbackIcon size={26} style={{ color: c }} aria-hidden />
                     )}
                   </motion.div>
                   {/* sweeping shine on hover */}
@@ -88,19 +90,19 @@ export default function Awards() {
                 </div>
 
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-heading font-semibold text-base leading-snug group-hover:text-[var(--accent)] transition-colors">
+                  <h3 className="font-heading font-semibold text-base leading-snug transition-colors" style={{ ["--tw-prose-headings" as string]: c }}>
                     {award.title}
                   </h3>
                   {award.date && (
                     <span
                       className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-                      style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)" }}
+                      style={{ background: `color-mix(in srgb, ${c} 12%, transparent)`, color: c }}
                     >
                       {award.date}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-medium mb-3" style={{ color: "var(--accent)" }}>
+                <p className="text-xs font-medium mb-3" style={{ color: c }}>
                   {award.issuer}
                 </p>
                 <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
