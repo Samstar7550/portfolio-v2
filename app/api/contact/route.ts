@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { Redis } from "@upstash/redis";
 import { LEADS_KEY, Lead } from "@/lib/lead";
 import { CONTENT_KEYS } from "@/lib/content";
+import { contactNotificationEmail, contactAutoReplyEmail } from "@/lib/email-templates";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -56,12 +57,14 @@ export async function POST(request: NextRequest) {
 
   const fromEmail = process.env.FROM_EMAIL ?? "Portfolio <noreply@samuvel.in>";
   const resend = new Resend(process.env.RESEND_API_KEY);
+  const notif = contactNotificationEmail({ name: from_name, email: reply_to, message });
   const { error } = await resend.emails.send({
     from: fromEmail,
     to: process.env.CONTACT_EMAIL ?? "contact@samuvel.in",
     replyTo: reply_to,
     subject: `New message from ${from_name}`,
-    text: `Name: ${from_name}\nEmail: ${reply_to}\n\n${message}`,
+    html: notif.html,
+    text: notif.text,
   });
 
   if (error) {
@@ -73,15 +76,13 @@ export async function POST(request: NextRequest) {
   if (COOLDOWN > 0) await redis.set(rlKey, "1", { ex: COOLDOWN });
 
   // Auto-reply to the sender (fire-and-forget — never blocks the response)
+  const autoReply = contactAutoReplyEmail({ name: from_name, message });
   resend.emails.send({
     from: fromEmail,
     to: String(reply_to),
     subject: "Thanks for reaching out — Samuvel L",
-    text:
-      `Hi ${String(from_name).trim()},\n\n` +
-      `Thanks for getting in touch — I've received your message and will get back to you soon.\n\n` +
-      `For reference, here's what you sent:\n"${String(message).trim().slice(0, 500)}"\n\n` +
-      `— Samuvel L\nDevOps Engineer · https://www.samuvel.in`,
+    html: autoReply.html,
+    text: autoReply.text,
   }).catch((e) => console.error("Auto-reply failed:", e));
 
   // Store as a lead for the nightly digest (fire-and-forget)
