@@ -97,7 +97,7 @@ async function sendChangeNotification(type: ContentType, oldVal: unknown, newVal
   const changes = describeChanges(oldVal, newVal);
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
-    from: process.env.FROM_EMAIL ?? "Portfolio <noreply@samuvel.in>",
+    from: process.env.FROM_EMAIL ?? "Samuvel L <support@samuvel.in>",
     to:   process.env.ADMIN_EMAIL ?? "admin@samuvel.in",
     subject: `Portfolio updated — ${SECTION_LABELS[type]}`,
     text:

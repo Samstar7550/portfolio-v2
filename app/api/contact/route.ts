@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const fromEmail = process.env.FROM_EMAIL ?? "Portfolio <noreply@samuvel.in>";
+  const fromEmail = process.env.FROM_EMAIL ?? "Samuvel L <support@samuvel.in>";
   const resend = new Resend(process.env.RESEND_API_KEY);
   const notif = contactNotificationEmail({ name: from_name, email: reply_to, message });
   const { error } = await resend.emails.send({

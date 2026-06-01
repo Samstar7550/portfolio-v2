@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
   // ── Send email ────────────────────────────────────────────────────────────────
   const resend = new Resend(process.env.RESEND_API_KEY);
   const { error } = await resend.emails.send({
-    from: process.env.FROM_EMAIL    ?? "Portfolio <noreply@samuvel.in>",
+    from: process.env.FROM_EMAIL    ?? "Samuvel L <support@samuvel.in>",
     to:   process.env.ADMIN_EMAIL   ?? "admin@samuvel.in",
     subject,
     text: body,
