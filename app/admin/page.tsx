@@ -2114,6 +2114,15 @@ function CertificationsTab({ certs, onSave, uploadIcon }: { certs: Certification
 
 // ─── Profile tab ───────────────────────────────────────────────────────────────
 
+function ProfileGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return card(
+    <div className="space-y-3">
+      <p className="text-sm font-semibold mb-1">{title}</p>
+      {children}
+    </div>
+  );
+}
+
 function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: Profile) => Promise<void> }) {
   const [p, setP] = useState<Profile>(profile ?? DEFAULT_PROFILE);
   const [saving, setSaving] = useState(false);
@@ -2131,14 +2140,6 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
   const inp = "w-full px-3 py-2 text-sm rounded-lg border border-[var(--border)] bg-[var(--surface-2)] outline-none focus:border-[var(--accent)]";
   const lbl = "text-xs mb-1.5 block";
 
-  const Group = ({ title, children }: { title: string; children: React.ReactNode }) =>
-    card(
-      <div className="space-y-3">
-        <p className="text-sm font-semibold mb-1">{title}</p>
-        {children}
-      </div>
-    );
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between sticky top-0 z-10 pb-2">
@@ -2152,7 +2153,7 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
       </div>
 
       {/* Hero */}
-      <Group title="Hero">
+      <ProfileGroup title="Hero">
         <div className="grid sm:grid-cols-2 gap-3">
           <div><span className={lbl} style={{ color: "var(--muted)" }}>Name</span>
             <input value={p.name} onChange={e => set("name", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
@@ -2175,10 +2176,10 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
           <div><span className={lbl} style={{ color: "var(--muted)" }}>Unavailable badge text</span>
             <input value={p.unavailableText} onChange={e => set("unavailableText", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
         </div>
-      </Group>
+      </ProfileGroup>
 
       {/* About */}
-      <Group title="About">
+      <ProfileGroup title="About">
         <div className="grid sm:grid-cols-2 gap-3">
           <div><span className={lbl} style={{ color: "var(--muted)" }}>Subtitle (under name)</span>
             <input value={p.aboutTitle} onChange={e => set("aboutTitle", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
@@ -2227,10 +2228,10 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
             </div>
           </div>
         ))}
-      </Group>
+      </ProfileGroup>
 
       {/* Contact */}
-      <Group title="Contact & Social">
+      <ProfileGroup title="Contact & Social">
         <div><span className={lbl} style={{ color: "var(--muted)" }}>Contact line (under heading)</span>
           <input value={p.contactLine} onChange={e => set("contactLine", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
         <div className="grid sm:grid-cols-2 gap-3">
@@ -2241,7 +2242,7 @@ function ProfileTab({ profile, onSave }: { profile: Profile | null; onSave: (p: 
         </div>
         <div><span className={lbl} style={{ color: "var(--muted)" }}>GitHub URL</span>
           <input value={p.github} onChange={e => set("github", e.target.value)} className={inp} style={{ color: "var(--foreground)" }} /></div>
-      </Group>
+      </ProfileGroup>
     </div>
   );
 }
