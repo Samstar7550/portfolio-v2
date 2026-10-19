@@ -591,7 +591,7 @@ const igSplit = (b64, addr, pillText, heading, subtext, tags, bottomLeft, bottom
 
 await render("ig-01-hero.png", 1080, 1080, igSplit(sHero,"www.samuvel.in","Portfolio Launch",`My Portfolio<br/>is ${em("Live 🚀")}`,"A full-stack web application — not just a static site.<br/>Built to prove every DevOps skill on the résumé.",tag("⚡ Live CMS")+tag("📝 Blog","#4A9EFF","rgba(74,158,255,.1)")+tag("🔐 Admin Panel","#A78BFA","rgba(167,139,250,.1)")+tag("📱 PWA","#34D399","rgba(52,211,153,.1)"),authorRow()));
 
-await render("ig-02-about.png", 1080, 1080, igSplit(sAbout,"www.samuvel.in/#about","About Me",`${em("System Engineer")}<br/>@ TCS`,"DevOps & Cloud Engineer with 1 yr 9 months at Tata Consultancy Services.<br/>Ranked Top 2% (#6/280) in TCS Ignite.",tag("🏆 #6 / 280 Ignite")+tag("☁️ AZ-900 Certified","#0078D4","rgba(0,120,212,.1)")+tag("🔧 Kubernetes · Docker","#34D399","rgba(52,211,153,.1)"),authorRow()));
+await render("ig-02-about.png", 1080, 1080, igSplit(sAbout,"www.samuvel.in/#about","About Me",`${em("System Engineer")}<br/>@ TCS`,"DevOps & Cloud Engineer with 1 yr 9 months at Tata Consultancy Services.<br/>Ranked Top 2% (#6/279) in TCS Ignite.",tag("🏆 #6 / 279 Ignite")+tag("☁️ AZ-900 Certified","#0078D4","rgba(0,120,212,.1)")+tag("🔧 Kubernetes · Docker","#34D399","rgba(52,211,153,.1)"),authorRow()));
 
 await render("ig-03-experience.png", 1080, 1080, igSplit(sExp,"www.samuvel.in/#experience","Career Timeline",`${em("1 Yr 9 Months")}<br/>at TCS`,"Growing from Graduate Trainee to System Engineer — building<br/>real-world DevOps labs for Kubernetes, Azure, Docker & CI/CD.",tag("System Engineer")+tag("ASE","#4A9EFF","rgba(74,158,255,.1)")+tag("Top 2% TCS Ignite","#F59E0B","rgba(245,158,11,.1)")+tag("Freelance Design 2yr","#A78BFA","rgba(167,139,250,.1)"),authorRow()));
 
@@ -811,7 +811,7 @@ await render("li-02-experience.png", 1200, 627, liWrap(
     <div style="margin:14px 0 10px;">${h1(`${em("1 Yr 9 Months")}<br/>at TCS`,40)}</div>
     <p style="font-size:12.5px;color:#5C6880;line-height:1.65;margin-bottom:16px;">Growing from Graduate Trainee to System Engineer — building hands-on challenge environments for Kubernetes, Azure, Docker, Jenkins &amp; GitLab.</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
-      ${[["Jan 2026 – Now","System Engineer","Current · DevOps Training Lead","#22c55e"],["Sep–Dec 2025","Asst. System Engineer","Azure Cloud Training","#00C8D7"],["Jan–Aug 2025","ASE Trainee","Docker, K8s, CI/CD labs","#4A9EFF"],["Sep–Dec 2024","Graduate Trainee","#6/280 · Top 2% Ignite","#F59E0B"]].map(([p,r,d,c])=>`
+      ${[["Jan 2026 – Now","System Engineer","Current · DevOps Training Lead","#22c55e"],["Sep–Dec 2025","Asst. System Engineer","Azure Cloud Training","#00C8D7"],["Jan–Aug 2025","ASE Trainee","Docker, K8s, CI/CD labs","#4A9EFF"],["Sep–Dec 2024","Graduate Trainee","#6/279 · Top 2% Ignite","#F59E0B"]].map(([p,r,d,c])=>`
         <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;">
           <div style="width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0;"></div>
           <div style="flex:1;"><span style="font-size:12px;font-weight:600;color:#D4DCE8;">${r}</span> <span style="font-size:11px;color:#5C6880;">— ${d}</span></div>
@@ -931,7 +931,7 @@ await render("db-01-showcase.png", 1600, 1200,
       </div>
     </div>
     <div style="display:flex;gap:14px;margin-top:22px;">
-      ${[{n:"1yr 9mo",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/280"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"🔄 In Progress"},{n:"PWA",l:"Installable"}].map(s=>`
+      ${[{n:"1yr 9mo",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/279"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"🔄 In Progress"},{n:"PWA",l:"Installable"}].map(s=>`
         <div style="flex:1;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px;text-align:center;">
           <div style="font-size:18px;font-weight:800;color:#00C8D7;letter-spacing:-.5px;">${s.n}</div>
           <div style="font-size:11px;color:#5C6880;margin-top:3px;">${s.l}</div>

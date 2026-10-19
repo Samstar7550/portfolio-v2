@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Trophy, Medal, Star, Sparkles } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
-import { AwardItem } from "@/lib/content";
+import { AwardItem, fixIconUrl } from "@/lib/content";
 
 const FALLBACK_ICONS = [Trophy, Medal, Star, Sparkles];
 
@@ -76,7 +76,7 @@ export default function Awards() {
                   >
                     {award.iconUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={award.iconUrl} alt={award.title} className="w-7 h-7 object-contain" />
+                      <img src={fixIconUrl(award.iconUrl)} alt={award.title} className="w-7 h-7 object-contain" />
                     ) : award.title ? (
                       <span className="text-lg font-bold font-heading" style={{ color: c }}>
                         {initials(award.title)}

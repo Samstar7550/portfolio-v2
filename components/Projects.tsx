@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import type { Project as ProjectType } from "@/lib/content";
+import { fixIconUrl, type Project as ProjectType } from "@/lib/content";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, Server, Globe, ArrowRight, X, ChevronLeft, ChevronRight, Maximize2, BookOpen, PlayCircle } from "lucide-react";
@@ -258,7 +258,7 @@ export default function Projects() {
                       >
                         {project.iconUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={project.iconUrl} alt="" width={18} height={18} style={{ objectFit: "contain" }} />
+                          <img src={fixIconUrl(project.iconUrl)} alt="" width={18} height={18} style={{ objectFit: "contain" }} />
                         ) : (
                           <ProjectIcon type={project.type} color={project.color} />
                         )}

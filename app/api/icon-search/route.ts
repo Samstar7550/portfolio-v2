@@ -59,7 +59,7 @@ async function searchIconify(q: string): Promise<IconHit[]> {
       source: "iconify" as const,
       title: iconifyTitle(id),
       slug: id,
-      cdnUrl: `https://api.iconify.design/${id}.svg`,
+      cdnUrl: `https://api.iconify.design/${id.replace(":", "/")}.svg`,
     }));
   } catch {
     return [];

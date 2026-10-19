@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import type { ExperienceItem } from "@/lib/content";
+import { fixIconUrl, type ExperienceItem } from "@/lib/content";
 import { Briefcase, Palette } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft, slideRight, staggerContainer } from "@/lib/animations";
@@ -52,7 +52,7 @@ const defaultExperience: ExperienceItem[] = [
     type: "devops",
     current: false,
     bullets: [
-      "Ranked top 6 out of 280 in TCS Ignite onboarding — top 2% of entire cohort",
+      "Ranked top 6 out of 279 in TCS Ignite onboarding — top 2% of entire cohort",
       "Selected for Talent Development team based on performance",
     ],
     tags: ["TCS Ignite", "Top 2%"],
@@ -174,7 +174,7 @@ export default function Experience() {
                           <div className="flex items-center gap-2 mb-1">
                             {item.iconUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={item.iconUrl} alt="" width={14} height={14} style={{ objectFit: "contain", borderRadius: 2 }} />
+                              <img src={fixIconUrl(item.iconUrl)} alt="" width={14} height={14} style={{ objectFit: "contain", borderRadius: 2 }} />
                             ) : item.type === "devops" ? (
                               <Briefcase size={14} style={{ color: c }} />
                             ) : (

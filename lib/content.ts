@@ -128,8 +128,8 @@ export const DEFAULT_PROFILE: Profile = {
   name: "Samuvel L",
   roles: ["DevOps Engineer", "Cloud Engineer", "System Engineer"],
   tagline: "Building the pipelines that ship code",
-  heroBadge: "Top 2% · TCS Ignite · #6 / 280",
-  statValue: "#6 / 280",
+  heroBadge: "Top 2% · TCS Ignite · #6 / 279",
+  statValue: "#6 / 279",
   statLabel: "TCS Ignite Rank",
   availableText: "Available for DevOps & Cloud roles · Remote · India",
   unavailableText: "Not currently open to new roles",
@@ -146,7 +146,7 @@ export const DEFAULT_PROFILE: Profile = {
   ],
   stats: [
     { prefix: "Top ", value: 2,  suffix: "%",     label: "TCS Ignite Cohort" },
-    { prefix: "#",    value: 6,  suffix: "/280",  label: "TCS Ignite Ranking" },
+    { prefix: "#",    value: 6,  suffix: "/279",  label: "TCS Ignite Ranking" },
     { prefix: "",     value: 89, suffix: "%",     label: "B.Sc. Score" },
     { prefix: "",     value: 2,  suffix: "+ yrs", label: "Design Experience" },
   ],
@@ -213,7 +213,7 @@ export const DEFAULT_EXPERIENCE: ExperienceItem[] = [
     role: "Graduate Trainee", company: "Tata Consultancy Services",
     period: "Sep 2024 – Dec 2024", type: "devops", current: false,
     bullets: [
-      "Ranked top 6 out of 280 in TCS Ignite onboarding — top 2% of entire cohort",
+      "Ranked top 6 out of 279 in TCS Ignite onboarding — top 2% of entire cohort",
       "Selected for Talent Development team based on performance",
     ],
     tags: ["TCS Ignite", "Top 2%"],
@@ -279,3 +279,8 @@ export const DEFAULTS: Record<ContentType, unknown> = {
   testimonials:   DEFAULT_TESTIMONIALS,
   blog:           DEFAULT_BLOG,
 };
+
+/** Iconify serves icons at /prefix/name.svg; older saved URLs used /prefix:name.svg (404). */
+export function fixIconUrl(url?: string): string | undefined {
+  return url?.replace(/^(https:\/\/api\.iconify\.design\/)([\w-]+):([\w-]+\.svg)/, "$1$2/$3");
+}

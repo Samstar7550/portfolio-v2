@@ -323,7 +323,7 @@ const html = `<!DOCTYPE html>
     <div class="summary">
       DevOps Engineer at Tata Consultancy Services with 20+ months of hands-on experience building
       Kubernetes, Docker, Azure, and CI/CD environments for real-world engineer assessments. Ranked
-      <strong>top 2% (#6/280)</strong> in TCS Ignite onboarding. AZ-900 &amp; GitHub Copilot certified,
+      <strong>top 2% (#6/279)</strong> in TCS Ignite onboarding. AZ-900 &amp; GitHub Copilot certified,
       pursuing AZ-104. Full-stack background in Next.js, React, and TypeScript combined with 2+ years
       of UI/UX design — covering the entire delivery lifecycle from design to deployment.
     </div>
@@ -375,7 +375,7 @@ const html = `<!DOCTYPE html>
         </div>
         <div class="exp-company">Tata Consultancy Services</div>
         <ul class="exp-bullets">
-          <li>Ranked <strong>#6 out of 280</strong> in TCS Ignite onboarding — top 2% of entire cohort</li>
+          <li>Ranked <strong>#6 out of 279</strong> in TCS Ignite onboarding — top 2% of entire cohort</li>
           <li>Selected for Talent Development team based on exceptional performance</li>
         </ul>
       </div>

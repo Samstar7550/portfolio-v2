@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react";
 import { Clock, CheckCircle, ExternalLink } from "lucide-react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { slideLeft } from "@/lib/animations";
-import { DEFAULT_CERTIFICATIONS, Certification } from "@/lib/content";
+import { DEFAULT_CERTIFICATIONS, Certification, fixIconUrl } from "@/lib/content";
 
 export default function Certifications() {
   const ref = useRef(null);
@@ -91,7 +91,7 @@ export default function Certifications() {
                 >
                   {cert.iconUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cert.iconUrl} alt={cert.title} className="w-8 h-8 object-contain" />
+                    <img src={fixIconUrl(cert.iconUrl)} alt={cert.title} className="w-8 h-8 object-contain" />
                   ) : (
                     cert.badge
                   )}

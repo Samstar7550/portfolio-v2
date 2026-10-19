@@ -5,6 +5,7 @@ import { useRef, useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { EASE_OUT_EXPO, slideLeft } from "@/lib/animations";
+import { fixIconUrl } from "@/lib/content";
 
 // ─── Icon data ────────────────────────────────────────────────────────────────
 
@@ -277,7 +278,7 @@ function SkillBadge({
       >
         {skill.iconUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={skill.iconUrl} alt="" width={26} height={26} style={{ objectFit: "contain" }} />
+          <img src={fixIconUrl(skill.iconUrl)} alt="" width={26} height={26} style={{ objectFit: "contain" }} />
         ) : iconData ? (
           <SkillIcon iconData={iconData} isDark={isDark} size={26} />
         ) : (
