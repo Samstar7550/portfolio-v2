@@ -123,6 +123,13 @@ const html = `<!DOCTYPE html>
     font-size: 8.5pt;
     color: #4a5568;
     line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .core-skills {
+    font-size: 8pt;
+    color: #0D1117;
+    line-height: 1.6;
     padding-bottom: 13px;
     border-bottom: 2px solid #0F64D2;
     margin-bottom: 14px;
@@ -306,7 +313,7 @@ const html = `<!DOCTYPE html>
       </div>
       <div class="cert-item">
         <div class="cert-name">Azure Administrator</div>
-        <div class="cert-meta">AZ-104 · In Progress</div>
+        <div class="cert-meta">AZ-104 · Microsoft</div>
       </div>
       <div class="cert-item">
         <div class="cert-name">UI/UX Design</div>
@@ -321,11 +328,16 @@ const html = `<!DOCTYPE html>
     <div class="hd-title">DevOps Engineer &amp; System Engineer</div>
 
     <div class="summary">
-      DevOps Engineer at Tata Consultancy Services with 20+ months of hands-on experience building
-      Kubernetes, Docker, Azure, and CI/CD environments for real-world engineer assessments. Ranked
-      <strong>top 2% (#6/279)</strong> in TCS Ignite onboarding. AZ-900 &amp; GitHub Copilot certified,
-      pursuing AZ-104. Full-stack background in Next.js, React, and TypeScript combined with 2+ years
-      of UI/UX design — covering the entire delivery lifecycle from design to deployment.
+      Azure-focused DevOps &amp; System Engineer at Tata Consultancy Services with 20+ months building
+      and automating Kubernetes, Docker, Ansible, Jenkins, GitLab and Azure DevOps environments.
+      Ranked <strong>top 2% (#6/279)</strong> in TCS Ignite onboarding. AZ-104, AZ-900 &amp; GitHub
+      Copilot certified. Full-stack (Next.js, TypeScript) and UI/UX background. Seeking a hands-on
+      DevOps / Cloud Engineer role.
+    </div>
+
+    <div class="core-skills">
+      <strong>Core skills:</strong> Azure (VMs, networking, storage, IAM, CLI) · Kubernetes · Docker ·
+      CI/CD (Azure DevOps, GitHub Actions, Jenkins, GitLab CI) · Ansible · Git
     </div>
 
     <div class="section">
@@ -486,7 +498,7 @@ const html = `<!DOCTYPE html>
 
 const browser = await puppeteer.launch({
   headless: true,
-  executablePath: "/usr/bin/google-chrome",
+  executablePath: process.env.CHROME_PATH ?? "/usr/bin/google-chrome",
   args: ["--no-sandbox", "--disable-setuid-sandbox"],
 });
 
