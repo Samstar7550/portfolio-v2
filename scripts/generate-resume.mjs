@@ -43,6 +43,8 @@ const skills = [
   ["Containers & Orchestration", "Docker, Kubernetes, Helm"],
   ["Infrastructure as Code", "Terraform, Bicep"],
   ["CI/CD & Automation", "Jenkins, GitHub Actions, Ansible, Azure Pipelines"],
+  ["Operating Systems", "Linux"],
+  ["Programming & Scripting", "Python, Java"],
   ["Version Control", "Git, GitHub, GitLab"],
   ["Full-Stack Development", "Next.js, React, TypeScript, MongoDB, Tailwind CSS"],
   ["Design", "Figma, Adobe Photoshop, UI/UX Design"],
