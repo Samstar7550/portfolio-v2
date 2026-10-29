@@ -591,9 +591,9 @@ const igSplit = (b64, addr, pillText, heading, subtext, tags, bottomLeft, bottom
 
 await render("ig-01-hero.png", 1080, 1080, igSplit(sHero,"www.samuvel.in","Portfolio Launch",`My Portfolio<br/>is ${em("Live 🚀")}`,"A full-stack web application — not just a static site.<br/>Built to prove every DevOps skill on the résumé.",tag("⚡ Live CMS")+tag("📝 Blog","#4A9EFF","rgba(74,158,255,.1)")+tag("🔐 Admin Panel","#A78BFA","rgba(167,139,250,.1)")+tag("📱 PWA","#34D399","rgba(52,211,153,.1)"),authorRow()));
 
-await render("ig-02-about.png", 1080, 1080, igSplit(sAbout,"www.samuvel.in/#about","About Me",`${em("System Engineer")}<br/>@ TCS`,"DevOps & Cloud Engineer with 1 yr 9 months at Tata Consultancy Services.<br/>Ranked Top 2% (#6/279) in TCS Ignite.",tag("🏆 #6 / 279 Ignite")+tag("☁️ AZ-900 Certified","#0078D4","rgba(0,120,212,.1)")+tag("🔧 Kubernetes · Docker","#34D399","rgba(52,211,153,.1)"),authorRow()));
+await render("ig-02-about.png", 1080, 1080, igSplit(sAbout,"www.samuvel.in/#about","About Me",`${em("System Engineer")}<br/>@ TCS`,"DevOps & Cloud Engineer with 2+ years at Tata Consultancy Services.<br/>Ranked Top 2% (#6/279) in TCS Ignite.",tag("🏆 #6 / 279 Ignite")+tag("☁️ AZ-900 Certified","#0078D4","rgba(0,120,212,.1)")+tag("🔧 Kubernetes · Docker","#34D399","rgba(52,211,153,.1)"),authorRow()));
 
-await render("ig-03-experience.png", 1080, 1080, igSplit(sExp,"www.samuvel.in/#experience","Career Timeline",`${em("1 Yr 9 Months")}<br/>at TCS`,"Growing from Graduate Trainee to System Engineer — building<br/>real-world DevOps labs for Kubernetes, Azure, Docker & CI/CD.",tag("System Engineer")+tag("ASE","#4A9EFF","rgba(74,158,255,.1)")+tag("Top 2% TCS Ignite","#F59E0B","rgba(245,158,11,.1)")+tag("Freelance Design 2yr","#A78BFA","rgba(167,139,250,.1)"),authorRow()));
+await render("ig-03-experience.png", 1080, 1080, igSplit(sExp,"www.samuvel.in/#experience","Career Timeline",`${em("2+ Years")}<br/>at TCS`,"Growing from Graduate Trainee to System Engineer — building<br/>real-world DevOps labs for Kubernetes, Azure, Docker & CI/CD.",tag("System Engineer")+tag("ASE","#4A9EFF","rgba(74,158,255,.1)")+tag("Top 2% TCS Ignite","#F59E0B","rgba(245,158,11,.1)")+tag("Freelance Design 2yr","#A78BFA","rgba(167,139,250,.1)"),authorRow()));
 
 await render("ig-04-skills.png", 1080, 1080, igSplit(sSkills,"www.samuvel.in/#skills","Tech Skills",`${em("Tools")} I Master`,`DevOps · Cloud · Web Dev · Design — a full delivery lifecycle<br/>from infrastructure to UI, all in one engineer.`,["Kubernetes","Docker","Ansible","Jenkins","Azure","GitLab","Next.js","TypeScript"].map((s,i)=>tag(s,["#00C8D7","#4A9EFF","#A78BFA","#34D399","#0078D4","#FC6D26","#fff","#3178C6"][i])).join(""),authorRow()));
 
@@ -678,7 +678,7 @@ await render("story-01-full-portfolio.png", 1080, 1920,
       <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #00C8D7;flex-shrink:0;">
         <img src="${AVATAR_SRC}" style="width:100%;height:100%;object-fit:cover;object-position:top center;"/></div>
       <div><div style="font-size:17px;font-weight:700;color:#E6EDF3;">Samuvel L</div>
-        <div style="font-size:12px;color:#5C6880;">System Engineer · TCS · 1yr 9mo</div></div>
+        <div style="font-size:12px;color:#5C6880;">System Engineer · TCS · 2+ yrs</div></div>
       ${urlBadge()}
     </div>
     ${pill("Portfolio 2025")}
@@ -792,7 +792,7 @@ await render("li-01-launch.png", 1200, 627, liWrap(
   `<div style="flex:1;display:flex;flex-direction:column;">
     ${pill("Portfolio Launch")}
     <div style="margin:14px 0 10px;">${h1(`My Portfolio<br/>is ${em("Live 🚀")}`,42)}</div>
-    <p style="font-size:13px;color:#5C6880;line-height:1.65;margin-bottom:20px;">A full-stack web application proving every DevOps skill on the résumé.<br/>System Engineer @ TCS · 1 yr 9 months experience.</p>
+    <p style="font-size:13px;color:#5C6880;line-height:1.65;margin-bottom:20px;">A full-stack web application proving every DevOps skill on the résumé.<br/>System Engineer @ TCS · 2+ years experience.</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
       ${[["⚡","Live CMS","edit any section without redeploying"],["📝","Blog","reading time, tag filter &amp; dynamic OG images"],["🔐","Admin Console","OTP auth, analytics &amp; feedback inbox"],["📱","PWA","installable · live uptime badges · nightly digest"]].map(([i,t,d])=>`
         <div style="display:flex;align-items:center;gap:10px;">
@@ -808,7 +808,7 @@ await render("li-02-experience.png", 1200, 627, liWrap(
   `<div style="flex-shrink:0;width:480px;">${browserChrome(sExp,"www.samuvel.in/#experience")}</div>`,
   `<div style="flex:1;display:flex;flex-direction:column;">
     ${pill("Career Journey")}
-    <div style="margin:14px 0 10px;">${h1(`${em("1 Yr 9 Months")}<br/>at TCS`,40)}</div>
+    <div style="margin:14px 0 10px;">${h1(`${em("2+ Years")}<br/>at TCS`,40)}</div>
     <p style="font-size:12.5px;color:#5C6880;line-height:1.65;margin-bottom:16px;">Growing from Graduate Trainee to System Engineer — building hands-on challenge environments for Kubernetes, Azure, Docker, Jenkins &amp; GitLab.</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
       ${[["Jan 2026 – Now","System Engineer","Current · DevOps Training Lead","#22c55e"],["Sep–Dec 2025","Asst. System Engineer","Azure Cloud Training","#00C8D7"],["Jan–Aug 2025","ASE Trainee","Docker, K8s, CI/CD labs","#4A9EFF"],["Sep–Dec 2024","Graduate Trainee","#6/279 · Top 2% Ignite","#F59E0B"]].map(([p,r,d,c])=>`
@@ -852,7 +852,7 @@ await render("tw-01-launch.png", 1200, 675,
     <div style="flex:1;">
       ${pill("Just Shipped")}
       <div style="margin:14px 0 10px;">${h1(`My portfolio<br/>is live 🚀<br/>${em("www.samuvel.in")}`,38)}</div>
-      <p style="font-size:13px;color:#5C6880;line-height:1.65;margin-bottom:16px;">Full-stack portfolio with live CMS, blog, admin console,<br/>analytics &amp; PWA — 1yr 9mo DevOps @ TCS.</p>
+      <p style="font-size:13px;color:#5C6880;line-height:1.65;margin-bottom:16px;">Full-stack portfolio with live CMS, blog, admin console,<br/>analytics &amp; PWA — 2+ yrs DevOps @ TCS.</p>
       <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;">${tag("#DevOps")}${tag("#NextJS","#4A9EFF","rgba(74,158,255,.1)")}${tag("#OpenToWork","#34D399","rgba(52,211,153,.1)")}${tag("#PortfolioLaunch","#A78BFA","rgba(167,139,250,.1)")}</div>
       <div style="height:1px;background:rgba(255,255,255,.06);margin-bottom:16px;"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;">${authorRow()}${urlBadge()}</div>
@@ -894,7 +894,7 @@ await render("db-01-showcase.png", 1600, 1200,
           <img src="${AVATAR_SRC}" style="width:100%;height:100%;object-fit:cover;object-position:top;"/></div>
         <div>
           <div style="font-size:18px;font-weight:700;color:#E6EDF3;">Samuvel L — Portfolio v2</div>
-          <div style="font-size:13px;color:#5C6880;">Next.js 14 · Redis CMS · Framer Motion · Vercel · System Engineer @ TCS · 1yr 9mo</div>
+          <div style="font-size:13px;color:#5C6880;">Next.js 14 · Redis CMS · Framer Motion · Vercel · System Engineer @ TCS · 2+ yrs</div>
         </div>
       </div>
       ${urlBadge()}
@@ -931,7 +931,7 @@ await render("db-01-showcase.png", 1600, 1200,
       </div>
     </div>
     <div style="display:flex;gap:14px;margin-top:22px;">
-      ${[{n:"1yr 9mo",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/279"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"🔄 In Progress"},{n:"PWA",l:"Installable"}].map(s=>`
+      ${[{n:"2+ yrs",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/279"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"🔄 In Progress"},{n:"PWA",l:"Installable"}].map(s=>`
         <div style="flex:1;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px;text-align:center;">
           <div style="font-size:18px;font-weight:800;color:#00C8D7;letter-spacing:-.5px;">${s.n}</div>
           <div style="font-size:11px;color:#5C6880;margin-top:3px;">${s.l}</div>

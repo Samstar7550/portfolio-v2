@@ -135,7 +135,7 @@ export const DEFAULT_PROFILE: Profile = {
   unavailableText: "Not currently open to new roles",
   aboutTitle: "System Engineer @ TCS",
   bio: [
-    "I chose DevOps because I wanted to be where **code becomes real** — where a developer's push becomes a running service. At TCS I've grown from Graduate Trainee to System Engineer in 20 months, building **hands-on challenge environments** with Kubernetes, Docker, Ansible, Jenkins, GitLab, and Azure — making tools break, recover, and behave in edge cases. That's deeper technical exposure than most junior engineers get.",
+    "I chose DevOps because I wanted to be where **code becomes real** — where a developer's push becomes a running service. At TCS I've grown from Graduate Trainee to System Engineer within 2 years, building **hands-on challenge environments** with Kubernetes, Docker, Ansible, Jenkins, GitLab, and Azure — making tools break, recover, and behave in edge cases. That's deeper technical exposure than most junior engineers get.",
     "I work across the full **Microsoft DevOps stack** — configuring Azure Pipelines, managing repos and boards, and storing build artifacts. I hold the ==AZ-900== and ==GitHub Copilot== certifications and am preparing for **AZ-104** to deepen my Azure infrastructure skills.",
     "My background in **full-stack development** (Next.js, React, TypeScript) and **UI/UX design** gives me an edge most DevOps engineers don't have — I understand the entire delivery lifecycle, from design to deployment. Now looking for a hands-on **DevOps or Cloud Engineer role** where I can own infrastructure and solve real delivery problems.",
   ],

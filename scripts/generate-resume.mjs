@@ -30,7 +30,7 @@ const contactPlain = [
 const contactLinks = ["samuvel.in", "linkedin.com/in/samuvel7550", "github.com/Samstar7550"];
 
 const summary =
-  "DevOps and Systems Engineer with nearly 2 years of experience designing and building production-grade " +
+  "DevOps and Systems Engineer with 2+ years of experience designing and building production-grade " +
   "training infrastructure using Kubernetes, Docker, Ansible, Jenkins, GitLab, and Azure DevOps. Ranked 6th out of " +
   "279 (top 2%) in the TCS Ignite cohort, leading to placement on the Talent Development team. Azure-certified " +
   "(AZ-104, AZ-900) with hands-on experience independently architecting and deploying full-stack, multi-tenant " +
