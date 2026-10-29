@@ -1,4 +1,5 @@
-// Generates public/resume.pdf: a single-column, ATS-friendly resume.
+// Generates public/resume.pdf in the original resume format:
+// US Letter, Calibri/Carlito, navy section headings, grey italic dates.
 //
 //   node scripts/generate-resume.mjs
 //
@@ -21,14 +22,12 @@ const esc = (s) =>
 // Content
 // ---------------------------------------------------------------------------
 
-const contact = [
+const contactPlain = [
   "Chennai, India",
   process.env.RESUME_EMAIL || "contact@samuvel.in",
   process.env.RESUME_PHONE,
-  "samuvel.in",
-  "linkedin.com/in/samuvel7550",
-  "github.com/Samstar7550",
 ].filter(Boolean);
+const contactLinks = ["samuvel.in", "linkedin.com/in/samuvel7550", "github.com/Samstar7550"];
 
 const summary =
   "DevOps and Systems Engineer with nearly 2 years of experience designing and building production-grade " +
@@ -43,7 +42,7 @@ const skills = [
   ["Cloud", "Microsoft Azure (Virtual Machines, Networking, Storage, IAM, Azure CLI), Azure DevOps"],
   ["Containers & Orchestration", "Docker, Kubernetes, Helm"],
   ["Infrastructure as Code", "Terraform, Bicep"],
-  ["CI/CD & Automation", "Jenkins, GitHub Actions, Azure Pipelines, Ansible"],
+  ["CI/CD & Automation", "Jenkins, GitHub Actions, Ansible, Azure Pipelines"],
   ["Version Control", "Git, GitHub, GitLab"],
   ["Full-Stack Development", "Next.js, React, TypeScript, MongoDB, Tailwind CSS"],
   ["Design", "Figma, Adobe Photoshop, UI/UX Design"],
@@ -102,14 +101,16 @@ const projects = [
   {
     name: "DevOps Challenge Environments",
     link: "Internal TCS project, 2025",
+    isLink: false,
     bullets: [
       "Designed broken Kubernetes and Docker environments for TCS engineer assessments; engineers diagnosed and fixed real infrastructure issues such as pod crashes, misconfigured services, and failed pipelines",
       "Stack: Kubernetes, Docker, Ansible, Jenkins, GitLab, Azure DevOps",
     ],
   },
   {
-    name: "Prezenta: Multi-Tenant Portfolio SaaS",
+    name: "Prezenta — Multi-Tenant Portfolio SaaS",
     link: "prezenta.in",
+    isLink: true,
     bullets: [
       "Architected and built a production multi-tenant SaaS platform serving 9 profession groups with 54 unique template combinations",
       "Stack: Next.js 15 (App Router), TypeScript, MongoDB Atlas, Upstash Redis (caching, rate limiting), Cloudflare R2 (storage), NextAuth v5",
@@ -119,14 +120,16 @@ const projects = [
   {
     name: "Personal Portfolio Platform",
     link: "samuvel.in",
+    isLink: true,
     bullets: [
       "Built a live-editable portfolio site with an admin console enabling content updates without redeployment",
       "Stack: Next.js 14, TypeScript, Tailwind CSS, Framer Motion, Upstash Redis, Vercel Blob, Resend",
     ],
   },
   {
-    name: "VizualizeHub: AI Image Editing SaaS",
+    name: "VizualizeHub — AI Image Editing SaaS",
     link: "vizualizehub.vercel.app",
+    isLink: true,
     bullets: [
       "Built a full-stack image editing application with AI-powered transformations, user authentication, and credit-based billing",
       "Stack: Next.js, TypeScript, MongoDB, Cloudinary, Clerk, Vercel",
@@ -141,10 +144,13 @@ const education = {
   note: "Aggregate: 89%",
 };
 
+// "Name — Issuer, Mon YYYY"
 const certifications = [
-  ["Microsoft Certified: Azure Administrator Associate (AZ-104)", "Microsoft, Jun 2026"],
-  ["Microsoft Certified: Azure Fundamentals (AZ-900)", "Microsoft, Aug 2025"],
-  ["GitHub Copilot Certified", "GitHub, Mar 2026"],
+  "GitHub Actions Certified — GitHub, Oct 2026",
+  "Claude Certified Developer: Foundations — Anthropic, Sep 2026",
+  "Microsoft Certified: Azure Administrator Associate (AZ-104) — Microsoft, Jun 2026",
+  "GitHub Copilot Certified — GitHub, Mar 2026",
+  "Microsoft Certified: Azure Fundamentals (AZ-900) — Microsoft, Aug 2025",
 ];
 
 const additional = [
@@ -156,11 +162,14 @@ const additional = [
 // Markup
 // ---------------------------------------------------------------------------
 
-const bullets = (list) =>
-  `<ul>${list.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>`;
+const bullets = (list) => `<ul>${list.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>`;
+const section = (title, body) => `<section><h2>${esc(title)}</h2>${body}</section>`;
+const SEP = `<span class="pipe">&nbsp;&nbsp;|&nbsp;&nbsp;</span>`;
 
-const section = (title, body) =>
-  `<section><h2>${esc(title)}</h2>${body}</section>`;
+const contactHtml =
+  contactPlain.map((c) => `<span>${esc(c)}</span>`).join(SEP) +
+  SEP +
+  contactLinks.map((l) => `<a>${esc(l)}</a>`).join(SEP);
 
 const html = `<!DOCTYPE html>
 <html lang="en">
@@ -168,61 +177,63 @@ const html = `<!DOCTYPE html>
 <meta charset="UTF-8">
 <title>Samuvel L - Resume</title>
 <style>
-  @page { size: A4; margin: 13mm 15mm; }
+  @page { size: Letter; margin: 0.55in 0.75in 0.6in 0.75in; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { background: #fff; }
   body {
     background: #fff;
-    font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
-    font-size: 9.4pt;
-    line-height: 1.42;
-    color: #111827;
+    font-family: Carlito, Calibri, 'Segoe UI', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.3;
+    color: #000;
   }
-  header { text-align: center; padding-bottom: 8px; margin-bottom: 4px; }
-  h1 { font-size: 21pt; font-weight: 700; letter-spacing: 0.3px; }
-  .role { font-size: 11pt; color: #0F64D2; font-weight: 600; margin-top: 1px; }
-  .contact { font-size: 8.6pt; color: #4b5563; margin-top: 5px; }
-  .contact span + span::before { content: "  |  "; color: #9ca3af; }
-  section { margin-top: 11px; }
+  h1 { font-size: 22pt; font-weight: 700; color: #1a1a1a; line-height: 1.15; }
+  .role { font-size: 12pt; font-weight: 700; color: #1f4e79; margin-top: 3px; }
+  .contact { font-size: 10pt; color: #595959; margin-top: 5px; line-height: 1.35; }
+  .contact a { color: #1f4e79; text-decoration: underline; }
+  .pipe { color: #bfbfbf; }
+  .hdr-rule { border: 0; border-top: 1px solid #d9d9d9; margin: 7px 0 0; }
+  section { margin-top: 15px; }
   h2 {
-    font-size: 9pt;
+    font-size: 10.5pt;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: #0F64D2;
-    border-bottom: 1px solid #cbd5e1;
-    padding-bottom: 2px;
-    margin-bottom: 6px;
+    letter-spacing: 1.2px;
+    color: #1f4e79;
+    border-bottom: 1.4px solid #1f4e79;
+    padding-bottom: 3px;
+    margin-bottom: 8px;
     break-after: avoid;
   }
-  p.summary { text-align: justify; }
-  .skill-row { margin-bottom: 2px; }
+  .skill-row { margin-bottom: 4px; }
   .skill-row b { font-weight: 700; }
-  .item { margin-bottom: 7px; break-inside: avoid; }
-  .item-head { display: flex; justify-content: space-between; gap: 12px; }
-  .item-head .left { font-weight: 700; }
-  .item-head .left .org { font-weight: 400; color: #374151; }
-  .item-head .right { color: #4b5563; white-space: nowrap; font-size: 9pt; }
-  ul { padding-left: 15px; margin-top: 2px; }
-  li { margin-bottom: 1.5px; }
-  .link { font-weight: 400; color: #0F64D2; }
-  .row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 2px; }
+  .item { margin-bottom: 9px; break-inside: avoid; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; padding-right: 54pt; }
+  .head .title { font-weight: 700; }
+  .head .dash, .head .org { color: #595959; }
+  .head .org { margin-left: 0; }
+  .head .date { font-style: italic; color: #595959; font-size: 10pt; white-space: nowrap; }
+  .head .link { font-style: italic; color: #1f4e79; font-size: 10pt; white-space: nowrap; }
+  .head .link.plain { color: #595959; }
+  ul { list-style: disc; padding-left: 16pt; margin-top: 3px; }
+  li { margin-bottom: 3.2pt; padding-left: 1pt; }
+  .note { color: #595959; font-size: 9.5pt; margin-top: 1px; }
+  p.summary { }
 </style>
 </head>
 <body>
   <header>
     <h1>Samuvel L</h1>
     <div class="role">DevOps &amp; Cloud Engineer</div>
-    <div class="contact">${contact.map((c) => `<span>${esc(c)}</span>`).join("")}</div>
+    <div class="contact">${contactHtml}</div>
+    <hr class="hdr-rule">
   </header>
 
   ${section("Professional Summary", `<p class="summary">${esc(summary)}</p>`)}
 
   ${section(
     "Technical Skills",
-    skills
-      .map(([k, v]) => `<div class="skill-row"><b>${esc(k)}:</b> ${esc(v)}</div>`)
-      .join(""),
+    skills.map(([k, v]) => `<div class="skill-row"><b>${esc(k)}:</b> ${esc(v)}</div>`).join(""),
   )}
 
   ${section(
@@ -230,9 +241,9 @@ const html = `<!DOCTYPE html>
     experience
       .map(
         (e) => `<div class="item">
-      <div class="item-head">
-        <div class="left">${esc(e.title)} <span class="org">&nbsp;·&nbsp; ${esc(e.org)}</span></div>
-        <div class="right">${esc(e.dates)}</div>
+      <div class="head">
+        <div><span class="title">${esc(e.title)}</span> <span class="dash">&nbsp;—&nbsp;</span> <span class="org">${esc(e.org)}</span></div>
+        <div class="date">${esc(e.dates)}</div>
       </div>
       ${bullets(e.bullets)}
     </div>`,
@@ -245,9 +256,9 @@ const html = `<!DOCTYPE html>
     projects
       .map(
         (p) => `<div class="item">
-      <div class="item-head">
-        <div class="left">${esc(p.name)}</div>
-        <div class="right link">${esc(p.link)}</div>
+      <div class="head">
+        <div class="title">${esc(p.name)}</div>
+        <div class="link${p.isLink ? "" : " plain"}">${esc(p.link)}</div>
       </div>
       ${bullets(p.bullets)}
     </div>`,
@@ -257,22 +268,15 @@ const html = `<!DOCTYPE html>
 
   ${section(
     "Education",
-    `<div class="item-head"><div class="left">${esc(education.degree)} <span class="org" style="font-weight:400">&nbsp;·&nbsp; ${esc(education.school)}</span></div><div class="right">${esc(education.dates)}</div></div>
-     <div>${esc(education.note)}</div>`,
+    `<div class="head"><div><span class="title">${esc(education.degree)}</span> <span class="dash">&nbsp;—&nbsp;</span> <span class="org">${esc(education.school)}</span></div><div class="date">${esc(education.dates)}</div></div>
+     <div class="note">${esc(education.note)}</div>`,
   )}
 
-  ${section(
-    "Certifications",
-    certifications
-      .map(([n, d]) => `<div class="row"><div>${esc(n)}</div><div style="color:#4b5563;white-space:nowrap">${esc(d)}</div></div>`)
-      .join(""),
-  )}
+  ${section("Certifications", bullets(certifications))}
 
   ${section(
     "Additional Information",
-    additional
-      .map(([k, v]) => `<div class="skill-row"><b>${esc(k)}:</b> ${esc(v)}</div>`)
-      .join(""),
+    additional.map(([k, v]) => `<div class="skill-row"><b>${esc(k)}:</b> ${esc(v)}</div>`).join(""),
   )}
 </body>
 </html>`;
@@ -291,12 +295,12 @@ const page = await browser.newPage();
 await page.setContent(html, { waitUntil: "domcontentloaded" });
 
 if (process.env.RESUME_PREVIEW) {
-  await page.setViewport({ width: 794, height: 1123 });
+  await page.setViewport({ width: 816, height: 1056 });
   await page.screenshot({ path: process.env.RESUME_PREVIEW, fullPage: true });
 }
 
 const pdf = await page.pdf({
-  format: "A4",
+  format: "Letter",
   printBackground: true,
   preferCSSPageSize: true,
 });
