@@ -330,10 +330,10 @@ ${adminShell(`
       </div>
     </div>
     ${[
-      {badge:"AZ-900",title:"Microsoft Azure Fundamentals",issuer:"Microsoft",date:"Aug 2025",status:"issued",color:"#0078D4"},
+      {badge:"GH-200",title:"GitHub Actions",issuer:"GitHub",date:"Oct 2026",status:"issued",color:"#2088FF"},
+      {badge:"CCDV-F",title:"Claude Certified Developer - Foundations",issuer:"Anthropic",date:"Sep 2026",status:"issued",color:"#D97757"},
+      {badge:"AZ-104",title:"Azure Administrator Associate",issuer:"Microsoft",date:"Jun 2026",status:"issued",color:"#0078D4"},
       {badge:"GH",title:"GitHub Copilot Certified",issuer:"GitHub",date:"Mar 2026",status:"issued",color:"#2088FF"},
-      {badge:"AZ-104",title:"Azure Administrator Associate",issuer:"Microsoft",date:"In Progress",status:"progress",color:"#0078D4"},
-      {badge:"UX",title:"UI/UX Design",issuer:"Internshala",date:"Mar 2023",status:"issued",color:"#FF7262"},
     ].map((c,i) => `
       <div style="border-radius:14px;border:1px solid ${ADMIN_BORDER};background:${ADMIN_SURF};overflow:hidden;">
         <div style="display:flex;align-items:center;padding:14px 20px;gap:14px;">
@@ -354,13 +354,13 @@ ${adminShell(`
         ${i===1?`
           <div style="padding:16px 20px 20px;border-top:1px solid rgba(255,255,255,.05);">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-              <input placeholder="Title" value="GitHub Copilot Certified" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:12px;color:#D4DCE8;font-family:inherit;"/>
-              <input placeholder="Issuer" value="GitHub" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:12px;color:#D4DCE8;font-family:inherit;"/>
+              <input placeholder="Title" value="Claude Certified Developer - Foundations" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:12px;color:#D4DCE8;font-family:inherit;"/>
+              <input placeholder="Issuer" value="Anthropic" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;font-size:12px;color:#D4DCE8;font-family:inherit;"/>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:12px;color:#5C6880;">Accent colour</span>
-              <div style="width:32px;height:32px;border-radius:8px;background:#2088FF;border:1px solid rgba(255,255,255,.1);"></div>
-              <input value="#2088FF" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:11px;color:#D4DCE8;width:90px;font-family:inherit;"/>
+              <div style="width:32px;height:32px;border-radius:8px;background:#D97757;border:1px solid rgba(255,255,255,.1);"></div>
+              <input value="#D97757" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 10px;font-size:11px;color:#D4DCE8;width:90px;font-family:inherit;"/>
             </div>
           </div>
         `:''}
@@ -597,7 +597,7 @@ await render("ig-03-experience.png", 1080, 1080, igSplit(sExp,"www.samuvel.in/#e
 
 await render("ig-04-skills.png", 1080, 1080, igSplit(sSkills,"www.samuvel.in/#skills","Tech Skills",`${em("Tools")} I Master`,`DevOps · Cloud · Web Dev · Design — a full delivery lifecycle<br/>from infrastructure to UI, all in one engineer.`,["Kubernetes","Docker","Ansible","Jenkins","Azure","GitLab","Next.js","TypeScript"].map((s,i)=>tag(s,["#00C8D7","#4A9EFF","#A78BFA","#34D399","#0078D4","#FC6D26","#fff","#3178C6"][i])).join(""),authorRow()));
 
-await render("ig-05-certifications.png", 1080, 1080, igSplit(sCerts,"www.samuvel.in/#certifications","Certifications",`Certified &<br/>${em("Verified")}`,`AZ-900 issued · GitHub Copilot issued · AZ-104 in progress.<br/>Constantly levelling up on the Azure stack.`,tag("✅ AZ-900 Issued","#0078D4","rgba(0,120,212,.1)")+tag("✅ GitHub Copilot","#2088FF","rgba(32,136,255,.1)")+tag("🔄 AZ-104 In Progress","#F59E0B","rgba(245,158,11,.1)"),authorRow()));
+await render("ig-05-certifications.png", 1080, 1080, igSplit(sCerts,"www.samuvel.in/#certifications","Certifications",`Certified &<br/>${em("Verified")}`,`AZ-104, AZ-900, GitHub Actions, GitHub Copilot and Claude Foundations certified.<br/>Constantly levelling up on the Azure stack.`,tag("✅ AZ-104 Issued","#0078D4","rgba(0,120,212,.1)")+tag("✅ GitHub Actions","#2088FF","rgba(32,136,255,.1)")+tag("✅ Claude Foundations","#D97757","rgba(217,119,87,.1)"),authorRow()));
 
 await render("ig-06-projects.png", 1080, 1080, igSplit(sProjects,"www.samuvel.in/#projects","Projects",`Things I've ${em("Built")}`,`Web apps, DevOps tools, and design projects — all with<br/>live status badges, galleries, and case studies.`,tag("🟢 Live Status")+tag("🖼 Galleries","#4A9EFF","rgba(74,158,255,.1)")+tag("📄 Case Studies","#A78BFA","rgba(167,139,250,.1)")+tag("🎨 Figma Links","#FB923C","rgba(251,146,60,.1)"),authorRow()));
 
@@ -633,7 +633,7 @@ await render("ig-10-admin-certifications.png", 1080, 1080,
       box-shadow:0 20px 60px rgba(0,0,0,.65),0 0 50px rgba(0,200,215,.1);">
       <img src="data:image/png;base64,${sAdminCerts}" style="width:100%;display:block;height:100%;object-fit:cover;object-position:top;"/>
     </div>
-    <div style="display:flex;gap:8px;">${tag("✅ AZ-900","#0078D4","rgba(0,120,212,.1)")}${tag("✅ GitHub Copilot","#2088FF","rgba(32,136,255,.1)")}${tag("🔄 AZ-104 In Progress","#F59E0B","rgba(245,158,11,.1)")}</div>
+    <div style="display:flex;gap:8px;">${tag("✅ GitHub Actions","#2088FF","rgba(32,136,255,.1)")}${tag("✅ Claude Foundations","#D97757","rgba(217,119,87,.1)")}${tag("✅ AZ-104","#0078D4","rgba(0,120,212,.1)")}</div>
   </div></body></html>`);
 
 await render("ig-11-admin-blog.png", 1080, 1080,
@@ -827,9 +827,9 @@ await render("li-03-certifications.png", 1200, 627, liWrap(
   `<div style="flex:1;display:flex;flex-direction:column;">
     ${pill("Certifications")}
     <div style="margin:14px 0 10px;">${h1(`Certified &amp;<br/>${em("Verified")}`,40)}</div>
-    <p style="font-size:12.5px;color:#5C6880;line-height:1.6;margin-bottom:16px;">Azure Fundamentals issued · GitHub Copilot issued · AZ-104 in progress. Continuously levelling up on the Microsoft stack.</p>
+    <p style="font-size:12.5px;color:#5C6880;line-height:1.6;margin-bottom:16px;">Five certifications and counting: AZ-104, AZ-900, GitHub Actions, GitHub Copilot and Claude Foundations. Continuously levelling up.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      ${[{b:"AZ-900",t:"Azure Fundamentals",i:"Microsoft",d:"Aug 2025",s:true,c:"#0078D4"},{b:"GH",t:"GitHub Copilot",i:"GitHub",d:"Mar 2026",s:true,c:"#2088FF"},{b:"AZ-104",t:"Azure Administrator",i:"Microsoft",d:"Target 2026",s:false,c:"#0078D4"},{b:"UX",t:"UI/UX Design",i:"Internshala",d:"Mar 2023",s:true,c:"#FF7262"}].map(c=>`
+      ${[{b:"GH-200",t:"GitHub Actions",i:"GitHub",d:"Oct 2026",s:true,c:"#2088FF"},{b:"CCDV-F",t:"Claude Foundations",i:"Anthropic",d:"Sep 2026",s:true,c:"#D97757"},{b:"AZ-104",t:"Azure Administrator",i:"Microsoft",d:"Jun 2026",s:true,c:"#0078D4"},{b:"GH",t:"GitHub Copilot",i:"GitHub",d:"Mar 2026",s:true,c:"#2088FF"},{b:"AZ-900",t:"Azure Fundamentals",i:"Microsoft",d:"Aug 2025",s:true,c:"#0078D4"},{b:"UX",t:"UI/UX Design",i:"Internshala",d:"Mar 2023",s:true,c:"#FF7262"}].map(c=>`
         <div style="background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;">
           <div style="width:36px;height:36px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:${c.b.length>2?'8':'11'}px;font-weight:700;color:${c.c};background:${c.c}20;border:1px solid ${c.c}40;">${c.b}</div>
           <div><div style="font-size:12px;font-weight:600;color:#D4DCE8;">${c.t}</div>
@@ -865,10 +865,10 @@ await render("tw-02-certifications.png", 1200, 675,
   `<div style="position:relative;z-index:1;display:flex;align-items:center;height:675px;padding:54px 58px;gap:54px;">
     <div style="flex-shrink:0;width:520px;">${browserChrome(sCerts,"www.samuvel.in/#certifications")}</div>
     <div style="flex:1;">
-      ${pill("Microsoft Certified")}
+      ${pill("Certifications")}
       <div style="margin:14px 0 10px;">${h1(`Certified &amp;<br/>${em("Growing")}`,40)}</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-        ${[{b:"AZ-900",t:"Azure Fundamentals",d:"✅ Issued Aug 2025",c:"#0078D4"},{b:"GH",t:"GitHub Copilot",d:"✅ Issued Mar 2026",c:"#2088FF"},{b:"AZ-104",t:"Azure Administrator",d:"🔄 In Progress — next milestone",c:"#0078D4"},{b:"UX",t:"UI/UX Design",d:"✅ Issued Mar 2023",c:"#FF7262"}].map(c=>`
+        ${[{b:"GH-200",t:"GitHub Actions",d:"✅ Issued Oct 2026",c:"#2088FF"},{b:"CCDV-F",t:"Claude Foundations",d:"✅ Issued Sep 2026",c:"#D97757"},{b:"AZ-104",t:"Azure Administrator",d:"✅ Issued Jun 2026",c:"#0078D4"},{b:"GH",t:"GitHub Copilot",d:"✅ Issued Mar 2026",c:"#2088FF"},{b:"AZ-900",t:"Azure Fundamentals",d:"✅ Issued Aug 2025",c:"#0078D4"}].map(c=>`
           <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 14px;">
             <div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:${c.b.length>2?'8':'10'}px;font-weight:700;color:${c.c};background:${c.c}20;">${c.b}</div>
             <div style="flex:1;font-size:13px;font-weight:600;color:#D4DCE8;">${c.t}</div>
@@ -931,7 +931,7 @@ await render("db-01-showcase.png", 1600, 1200,
       </div>
     </div>
     <div style="display:flex;gap:14px;margin-top:22px;">
-      ${[{n:"2+ yrs",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/279"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"🔄 In Progress"},{n:"PWA",l:"Installable"}].map(s=>`
+      ${[{n:"2+ yrs",l:"@ TCS"},{n:"Top 2%",l:"TCS Ignite #6/279"},{n:"AZ-900",l:"✅ Issued"},{n:"GitHub",l:"Copilot ✅"},{n:"AZ-104",l:"✅ Issued"},{n:"PWA",l:"Installable"}].map(s=>`
         <div style="flex:1;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:16px;text-align:center;">
           <div style="font-size:18px;font-weight:800;color:#00C8D7;letter-spacing:-.5px;">${s.n}</div>
           <div style="font-size:11px;color:#5C6880;margin-top:3px;">${s.l}</div>
