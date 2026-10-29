@@ -102,10 +102,10 @@ const experience = [
 const projects = [
   {
     name: "DevOps Challenge Environments",
-    link: "Internal TCS project, 2025",
+    link: "Internal TCS project, 2025 – Present",
     isLink: false,
     bullets: [
-      "Designed broken Kubernetes and Docker environments for TCS engineer assessments; engineers diagnosed and fixed real infrastructure issues such as pod crashes, misconfigured services, and failed pipelines",
+      "Design broken Kubernetes and Docker environments for TCS engineer assessments; engineers diagnose and fix real infrastructure issues such as pod crashes, misconfigured services, and failed pipelines",
       "Stack: Kubernetes, Docker, Ansible, Jenkins, GitLab, Azure DevOps",
     ],
   },
